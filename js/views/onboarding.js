@@ -10,11 +10,11 @@ export default function onboarding([n]) {
     {
       body: `<div class="big-emoji">🍲</div>
         <h1 class="center">おうち薬膳へようこそ</h1>
-        <p class="center">その日のからだの調子と季節から、<br><b>家にある食材でつくれる</b>薬膳レシピを提案します。</p>
+        <p>その日のからだの調子と季節から、<b>家にある食材でつくれる</b>薬膳レシピを提案します。</p>
         <div class="card flat small">
           <p style="margin:0">① 気になる不調を選ぶ<br>② 作りたい料理（汁物だけ・副菜だけ…）を選ぶ<br>③ 家にある食材を確認<br>→ 東洋医学の「見立て」と、レシピ・食材の解説を表示</p>
         </div>
-        <p class="small center">作るたびに、自分のからだを通して薬膳の知識が少しずつ身についていきます。</p>`,
+        <p class="small">作るたびに、自分のからだを通して薬膳の知識が少しずつ身についていきます。</p>`,
     },
     { body: `<div class="big-emoji">🌿</div><h1 class="center">はじめにお読みください</h1><div class="card flat small">${DISCLAIMER}</div>` },
     {

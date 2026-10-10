@@ -282,6 +282,15 @@ export function resolveAvailability(recipe, have, settings) {
   return { missing, subs, skips };
 }
 
+// 買い物リスト用：このレシピで買い足すもの（主役で足りないもの＋脇役で家にないもの）
+export function shoppingEntries(recipe, have, settings, serves = 2) {
+  const { missing, skips } = resolveAvailability(recipe, have || [], settings);
+  return [...missing, ...skips].map(id => {
+    const item = recipe.items.find(i => i[0] === id);
+    return { id, name: ING_MAP[id].name, group: ING_MAP[id].group, text: scaleText(item[2], serves / 2) };
+  });
+}
+
 export function splitByAvailability(ranked, have, settings) {
   const ready = [], subbed = [], almost = [], two = [], rest = [];
   for (const c of ranked) {

@@ -216,6 +216,10 @@ export const INGREDIENTS = [
     ['潤いを生む', '気を巡らせる（皮は特に）'], ['moisten', 'qi_move'], ['winter'], 0.1, 49, { color: '#f39a2b' }),
   I('kaki', '柿', 'かき', 'fruit', false, '寒', ['甘', '渋'], ['心', '肺', '大腸'],
     ['熱を冷ます', '肺を潤す', 'お酒の熱を冷ます'], ['clear_heat', 'moisten'], ['autumn'], 0.2, 63, { color: '#ef7d2a', caution: '体を冷やすので、冷えやすい方は食べすぎに注意。' }),
+  I('goji', 'クコの実（乾燥）', 'くこのみ', 'fruit', false, '平', ['甘'], ['肝', '腎', '肺'],
+    ['肝と腎を補う', '血を補い、目を養う', '体を潤す'], ['blood_tonify', 'kidney', 'eye', 'moisten'], ['all'], 0.4, 349,
+    { color: '#c8372d', note: '薬膳では「枸杞子（くこし）」と呼ばれ、目の疲れや肝・腎の養生に使われる定番の食材。1日10〜20粒ほどが目安です。',
+      caution: '血液をサラサラにする薬（ワルファリンなど）を服用中の方は、医師・薬剤師に相談してください。' }),
   I('hoshigaki', '干し柿', 'ほしがき', 'fruit', false, '平', ['甘', '渋'], ['肺', '脾', '胃'],
     ['肺を潤し咳を鎮める', '胃腸を元気にする'], ['moisten', 'cough', 'spleen'], ['winter'], 1.7, 274,
     { color: '#c86a2a', note: '生の柿は寒性ですが、干すことで冷やす作用がおだやかになり「平」とされます。甘みが強いので1日1個程度に。' }),
@@ -289,7 +293,7 @@ export const HOWTO = {
   spinach: ['涼性なので、ごまやにんにく、炒め物など温かい調理と合わせて。'],
   milk: ['温めて飲むと冷えにくく、生姜やシナモンを加えると温める方向に。'],
   soy_milk: ['温めて生姜や黒糖を加えると、冷えやすい人にも。沸騰させると分離しやすいので注意。'],
-  green_tea: [],
+  goji: ['水やお湯に5分ほど浸して戻すと、ふっくらして料理になじみます。', 'スープ・おかゆ・ヨーグルト・お茶など、いつもの料理に「ちょい足し」できます。'],
 };
 
 export const ING_MAP = Object.fromEntries(INGREDIENTS.map(i => [i.id, i]));
@@ -326,8 +330,8 @@ export const STOCK_CATEGORIES = [
     ids: ['salt', 'soy_sauce', 'miso', 'vinegar', 'mirin', 'sake', 'sugar', 'sesame_oil', 'oil', 'dashi', 'torigara', 'consomme', 'mentsuyu', 'ponzu', 'pepper', 'katakuriko', 'flour', 'honey', 'lemon_juice', 'katsuobushi'] },
   { id: 'aroma', name: '薬味（チューブ可）', icon: '🫚', desc: '生姜・にんにく', ids: ['ginger', 'garlic'] },
   { id: 'staple', name: '主食', icon: '🍚', desc: '米・ごはん・もち麦', ids: ['rice', 'cooked_rice', 'oshimugi'] },
-  { id: 'dried', name: '乾物', icon: '🍄', desc: 'わかめ・ひじき・干ししいたけ・切り干し大根・きくらげ・のり・春雨',
-    ids: ['wakame', 'hijiki', 'dried_shiitake', 'kiriboshi', 'kikurage', 'nori', 'harusame'] },
+  { id: 'dried', name: '乾物', icon: '🍄', desc: 'わかめ・ひじき・干ししいたけ・切り干し大根・きくらげ・のり・春雨・クコの実',
+    ids: ['wakame', 'hijiki', 'dried_shiitake', 'kiriboshi', 'kikurage', 'nori', 'harusame', 'goji'] },
   { id: 'nuts', name: 'ナッツ・ごま・粉', icon: '🥜', desc: '白ごま・黒ごま・くるみ・きな粉', ids: ['white_sesame', 'black_sesame', 'walnut', 'kinako'] },
   { id: 'frozen_veg', name: '冷凍野菜', icon: '🥦', desc: 'ブロッコリー・刻み玉ねぎ・ほうれん草・かぼちゃ・里芋・オクラ・コーン・枝豆',
     ids: ['broccoli', 'onion', 'spinach', 'pumpkin', 'satoimo', 'okra', 'corn', 'edamame'] },

@@ -10,8 +10,9 @@ import constitution from './views/constitution.js';
 import learn from './views/learn.js';
 import settings from './views/settings.js';
 import onboarding from './views/onboarding.js';
+import shopping from './views/shopping.js';
 
-const routes = { home, consult, result, recipe, records, constitution, learn, settings, onboarding };
+const routes = { home, consult, result, recipe, records, constitution, learn, settings, onboarding, shopping };
 
 const view = document.getElementById('view');
 const topbar = document.getElementById('topbar');
@@ -48,6 +49,7 @@ function render() {
   view.innerHTML = rubyHTML(v.html);
   document.querySelectorAll('#tabbar a').forEach(a => a.classList.toggle('active', a.dataset.tab === (v.tab || name)));
   const path = name + '/' + params.join('/');
+  if (path !== lastPath) document.getElementById('toast-root').innerHTML = ''; // 前の画面のお知らせは消す
   if (path !== lastPath && !v.keepScroll) window.scrollTo(0, 0);
   lastPath = path;
   v.mount?.(view, topbar);

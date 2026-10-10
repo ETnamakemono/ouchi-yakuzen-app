@@ -8,6 +8,7 @@
 
 import { RECIPES_A } from './recipes_a.js';
 import { RECIPES_B } from './recipes_b.js';
+import { RECIPES_C } from './recipes_c.js';
 
 export const CATS = {
   main: { name: '主菜', icon: '🍖', desc: 'メインのおかず' },
@@ -291,6 +292,7 @@ export const RECIPES = [
       ['honey', 15, '大さじ1弱'],
       ['ginger', 3, '薄切り2枚'],
       ['lemon_juice', 5, '小さじ1'],
+      ['goji', 5, '小さじ2（約10粒）', '', 'opt'],
     ],
     steps: [
       '梨は皮をむいて8等分のくし形に切り、芯を取る。',
@@ -329,6 +331,6 @@ export const RECIPES = [
   },
 ];
 
-RECIPES.push(...RECIPES_A, ...RECIPES_B);
+RECIPES.push(...RECIPES_A, ...RECIPES_B, ...RECIPES_C);
 
 export const RECIPE_MAP = Object.fromEntries(RECIPES.map(r => [r.id, r]));

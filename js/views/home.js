@@ -53,6 +53,9 @@ export default function home() {
   </div>` : ''}
 
   <button class="btn primary big block" data-act="start" style="margin-top:8px">🌿 からだの相談をする</button>
+  <button class="btn block" data-act="shop" style="margin-top:10px">🛒 買い物前にレシピを調べる</button>
+  ${st.shopping.items.length ? `<a class="card flat" href="#/shopping" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;padding:12px 16px">
+    <span style="font-size:1.6em">🛒</span><span style="flex:1"><b>買い物リスト</b><br><small>残り ${st.shopping.items.filter(i => !i.done).length}品・作る予定 ${st.shopping.recipes.length}品</small></span><span class="muted">›</span></a>` : ''}
 
   <div class="shortcuts">
     ${shortcuts.map(([c, t, s]) => `<button class="shortcut" data-cat="${c}"><span class="s-icon">${CATS[c].icon}</span><span>${t}<small>${s}</small></span></button>`).join('')}
@@ -83,6 +86,7 @@ export default function home() {
     title: 'おうち薬膳', tab: 'home', html,
     mount(root) {
       root.querySelector('[data-act=start]').onclick = () => { store.saveDraft(newDraft()); location.hash = '#/consult/who'; };
+      root.querySelector('[data-act=shop]').onclick = () => { store.saveDraft(newDraft({ mode: 'shop' })); location.hash = '#/consult/who'; };
       root.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => {
         store.saveDraft(newDraft({ cat: b.dataset.cat, shortcut: true }));
         location.hash = '#/consult/who';

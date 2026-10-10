@@ -1,8 +1,8 @@
 // 結果：見立て・季節・アドバイス・レシピ候補
 import { store } from '../store.js';
-import { esc, glossify, natureBadge } from '../ui.js';
+import { esc, glossify, natureBadge, toast } from '../ui.js';
 import { buildContext } from '../context.js';
-import { advise, splitByAvailability, relaxOptions, companionNotes, nutrition, TIME_LABELS } from '../engine.js';
+import { advise, splitByAvailability, relaxOptions, companionNotes, nutrition, shoppingEntries, TIME_LABELS } from '../engine.js';
 import { WORRY_MAP, NO_WORRY } from '../../data/worries.js';
 import { CATS } from '../../data/recipes.js';
 import { COMPANION_MAP } from '../../data/companions.js';
@@ -13,19 +13,31 @@ import { kksHTML, organStripHTML, PATTERN_ORGANS, ORGAN_TO_EL, SEASON_TO_EL, WOR
 
 const short = id => ING_MAP[id].name.replace(/（.*/, '');
 
-export function recipeCard(item, from = 'r') {
+// shop: { have, serves, settings, added:Set, mode:'shop'|'now', entries:{} } … 買い物リストへの追加ボタンを出す
+export function recipeCard(item, from = 'r', shop = null) {
   const r = item.recipe;
   const n = nutrition(r);
-  return `<a class="rcard" href="#/recipe/${r.id}/${from}">
+  const entries = shop ? shoppingEntries(r, shop.have, shop.settings, shop.serves) : [];
+  if (shop) shop.entries[r.id] = entries;
+  const shopMode = shop?.mode === 'shop';
+  const lines = shopMode
+    ? (entries.length ? `<div class="r-missing">🛒 買うもの：${esc(entries.map(e => short(e.id)).join('・'))}</div>` : `<div class="r-missing" style="color:var(--matcha-d)">✓ 家にあるもので作れる</div>`)
+    : `${item.missing?.length ? `<div class="r-missing">あと「${esc(item.missing.map(id => ING_MAP[id].name).join('・'))}」があれば</div>` : ''}
+       ${item.skips?.length ? `<div class="r-missing" style="color:var(--ink-3)">${esc(item.skips.map(short).join('・'))}はなくてもOK</div>` : ''}`;
+  const card = `<a class="rcard" href="#/recipe/${r.id}/${from}">
     ${illustSVG(r, { size: 'sm' })}
     <div class="r-body">
       <div class="r-name">${esc(r.name)}</div>
       <div class="r-meta">${CATS[r.cat].icon} ${CATS[r.cat].name}・${r.minutes}分・脂質${n.fat}g ${natureBadge(r.nature)}</div>
-      ${item.missing?.length ? `<div class="r-missing">あと「${esc(item.missing.map(id => ING_MAP[id].name).join('・'))}」があれば</div>` : ''}
+      ${lines}
       ${item.subs?.length ? `<div class="r-missing" style="color:var(--ai)">${esc(item.subs.map(s => `${short(s.id)}→${short(s.alt)}`).join('、'))}で代用</div>` : ''}
-      ${item.skips?.length ? `<div class="r-missing" style="color:var(--ink-3)">${esc(item.skips.map(short).join('・'))}はなくてもOK</div>` : ''}
       ${item.reasons?.length ? `<div class="r-why">${item.reasons.slice(0, 2).map(t => `<span class="tag matcha">${esc(t)}</span>`).join('')}</div>` : ''}
     </div></a>`;
+  // 買うものがあるカードには「買い物リストに追加」ボタン（主役が足りない、または買い物モード）
+  const showAdd = shop && entries.length && (shopMode || item.missing?.length);
+  if (!showAdd) return card;
+  const added = shop.added.has(r.id);
+  return `<div class="rwrap">${card}<button class="btn small shop-add ${added ? 'done' : ''}" data-shop="${r.id}">${added ? '✓ 買い物リストに追加済み' : `🛒 買い物リストに追加（${entries.length}品）`}</button></div>`;
 }
 
 export default function result() {
@@ -47,6 +59,7 @@ export default function result() {
   const condChips = [
     d.who === 'self' ? '自分だけ（1人分）' : '夫と2人（2人分）',
     ...(noWorry ? ['季節の養生'] : d.worries.map(w => WORRY_MAP[w]?.name)),
+    ...(d.mode === 'shop' ? ['🛒 買い物前'] : []),
     d.cat && d.cat !== 'any' ? CATS[d.cat].name : 'おまかせ',
     TIME_LABELS[d.time].replace(/（.*/, ''),
     ...d.companions.map(c => '＋' + COMPANION_MAP[c]?.name),
@@ -61,13 +74,22 @@ export default function result() {
   const more = [...split.ready.slice(5), ...split.subbed.slice(4), ...split.almost.slice(3)];
   const few = shown.ready.length + shown.subbed.length + shown.almost.length;
   const two = few < 3 ? split.two.slice(0, 3) : [];
-  const zero = !few;
+  const zeroNow = !few;
   // 図：注目の臓腑（見立て）と今の季節
   const focusOrgans = [...new Set(diag.top.flatMap(t => PATTERN_ORGANS[t.id] || []))];
   const focusEls = focusOrgans.map(o => ORGAN_TO_EL[o]);
   const worryNotes = d.worries.map(w => WORRY_MAP[w]).filter(w => w?.note);
   const signs = d.worries.filter(w => WORRY_SIGNS[w]).map(w => ({ w: WORRY_MAP[w], el: WORRY_SIGNS[w][0], why: WORRY_SIGNS[w][1] }));
   const signEls = [...new Set(signs.map(s => s.el))];
+  // 買い物：買い物モードなら在庫で絞らず、買い足すものを添えて全候補を出す
+  const shopMode = d.mode === 'shop' && Array.isArray(have);
+  const shop = Array.isArray(have) ? { have, serves: d.serves, settings, mode: shopMode ? 'shop' : 'now', added: new Set(st.shopping.recipes.map(r => r.id)), entries: {} } : null;
+  const all = [...split.ready, ...split.subbed, ...split.almost, ...split.two, ...split.rest];
+  const needBuy = x => x.missing.length + x.skips.length;
+  const noBuy = shopMode ? all.filter(x => !needBuy(x)).sort((p, q) => q.score - p.score).slice(0, 3) : [];
+  const buy = shopMode ? all.filter(needBuy).sort((p, q) => (q.score - needBuy(q) * 0.6) - (p.score - needBuy(p) * 0.6)) : [];
+  const shopCount = st.shopping.items.filter(i => !i.done).length;
+  const zero = shopMode ? !all.length : zeroNow;
   const relax = zero ? relaxOptions(cond, ctx, settings, have) : [];
   const flags = d.worries.map(w => WORRY_MAP[w]).filter(w => w?.redflag);
 
@@ -105,12 +127,20 @@ export default function result() {
   ${adv.cooking ? `<div class="tips-line"><span class="ti2">🍳</span><span>${esc(adv.cooking)}がおすすめ</span></div>` : ''}
   ${compNotes[0] ? `<div class="tips-line"><span class="ti2">🍽️</span><span>${esc(compNotes[0])}</span></div>` : ''}
 
-  <h2>おすすめレシピ</h2>
-  ${shown.ready.length ? `<div class="label small">${have === null ? '食材がそろっている前提' : '今ある食材で作れる'}</div>${shown.ready.map(x => recipeCard(x)).join('')}` : ''}
-  ${shown.subbed.length ? `<div class="label small" style="margin-top:14px">代用・省略して作れる</div>${shown.subbed.map(x => recipeCard(x)).join('')}` : ''}
-  ${shown.almost.length ? `<div class="label small" style="margin-top:14px">あと1つで作れる</div>${shown.almost.map(x => recipeCard(x)).join('')}` : ''}
-  ${two.length ? `<div class="label small" style="margin-top:14px">あと2つで作れる（買い物ついでに）</div>${two.map(x => recipeCard(x)).join('')}` : ''}
-  ${more.length ? `<div id="more" class="hidden">${more.slice(0, 8).map(x => recipeCard(x)).join('')}</div><button class="btn ghost block" data-act="more">別の候補を見る（${Math.min(more.length, 8)}件）</button>` : ''}
+  <h2>${shopMode ? '買い物して作るレシピ' : 'おすすめレシピ'}</h2>
+  ${shopMode ? `<div class="card tint-ai flat small" style="margin-top:0">🛒 <b>買い物モード</b>：気になるレシピの「買い物リストに追加」を押すと、足りない食材がリストに入ります。</div>` : ''}
+  <a class="btn small ghost block ${shopMode || shopCount ? '' : 'hidden'}" id="shop-link" href="#/shopping">🛒 買い物リストを見る（<span id="shop-count">${shopCount}</span>品）</a>
+  ${shopMode ? `
+    ${noBuy.length ? `<div class="label small" style="margin-top:14px">買い足しなしで作れる</div>${noBuy.map(x => recipeCard(x, 'r', shop)).join('')}` : ''}
+    ${buy.length ? `<div class="label small" style="margin-top:14px">買い足して作る</div>${buy.slice(0, 6).map(x => recipeCard(x, 'r', shop)).join('')}` : ''}
+    ${buy.length > 6 ? `<div id="more" class="hidden">${buy.slice(6, 14).map(x => recipeCard(x, 'r', shop)).join('')}</div><button class="btn ghost block" data-act="more">別の候補を見る（${Math.min(buy.length - 6, 8)}件）</button>` : ''}
+  ` : `
+    ${shown.ready.length ? `<div class="label small">${have === null ? '食材がそろっている前提' : '今ある食材で作れる'}</div>${shown.ready.map(x => recipeCard(x, 'r', shop)).join('')}` : ''}
+    ${shown.subbed.length ? `<div class="label small" style="margin-top:14px">代用・省略して作れる</div>${shown.subbed.map(x => recipeCard(x, 'r', shop)).join('')}` : ''}
+    ${shown.almost.length ? `<div class="label small" style="margin-top:14px">あと1つで作れる</div>${shown.almost.map(x => recipeCard(x, 'r', shop)).join('')}` : ''}
+    ${two.length ? `<div class="label small" style="margin-top:14px">あと2つで作れる（買い物ついでに）</div>${two.map(x => recipeCard(x, 'r', shop)).join('')}` : ''}
+    ${more.length ? `<div id="more" class="hidden">${more.slice(0, 8).map(x => recipeCard(x, 'r', shop)).join('')}</div><button class="btn ghost block" data-act="more">別の候補を見る（${Math.min(more.length, 8)}件）</button>` : ''}
+  `}
   ${zero ? `<div class="card tint-kaki">
     <p style="margin-top:0">この条件に合うレシピが見つかりませんでした。条件を少し広げてみませんか？</p>
     ${relax.length ? relax.map((o, i) => `<button class="btn block" style="margin:6px 0" data-relax="${i}">${esc(o.label)}（${o.count}件）</button>`).join('') : '<p class="small">悩みや料理の種類を変えて、もう一度お試しください。</p>'}
@@ -145,6 +175,15 @@ export default function result() {
     mount(root) {
       const mb = root.querySelector('[data-act=more]');
       if (mb) mb.onclick = () => { root.querySelector('#more').classList.remove('hidden'); mb.remove(); };
+      root.querySelectorAll('[data-shop]').forEach(b => b.onclick = () => {
+        const item = ranked.find(x => x.recipe.id === b.dataset.shop);
+        if (!item || b.classList.contains('done')) return;
+        store.addShopping(item.recipe, shop.entries[item.recipe.id]);
+        b.classList.add('done'); b.textContent = '✓ 買い物リストに追加済み';
+        root.querySelector('#shop-count').textContent = store.get().shopping.items.filter(i => !i.done).length;
+        root.querySelector('#shop-link').classList.remove('hidden');
+        toast('買い物リストに追加しました', { action: 'リストを見る', onAction: () => { location.hash = '#/shopping'; } });
+      });
       root.querySelectorAll('[data-relax]').forEach(b => b.onclick = () => {
         const o = relax[+b.dataset.relax];
         store.update(s => {

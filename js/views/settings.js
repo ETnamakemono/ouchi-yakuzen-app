@@ -5,7 +5,7 @@ import { INGREDIENTS, ING_MAP, GROUP_LABELS, STOCK_CATEGORIES } from '../../data
 import { TIME_LABELS, FAT_LIMITS } from '../engine.js';
 import { applyFontSize } from '../app.js';
 
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '1.2.0';
 const refresh = () => window.dispatchEvent(new HashChangeEvent('hashchange'));
 
 export const INSTALL_HELP = `

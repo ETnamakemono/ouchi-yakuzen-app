@@ -180,6 +180,7 @@ function have(d) {
   const list = [...asked, ...d.have.filter(k => !asked.includes(k) && (ING_MAP[k] || k.startsWith('g:')))];
   const groups = {};
   list.forEach(k => { const g = askGroup(k); (groups[g] ||= []).push(k); });
+  const shopMode = d.mode === 'shop';
 
   if (!list.length) {
     return {
@@ -190,20 +191,26 @@ function have(d) {
     };
   }
   return {
-    html: `${head(d, '今、家にある食材は？', '今日のレシピの「主役」になる食材だけ聞いています。ざっくりでOK。常備食材は確認不要です（設定で変更できます）。')}
+    html: `${head(d, shopMode ? '家にある食材は？' : '今、家にある食材は？', shopMode
+      ? '買い物の前に：家にあるものを、わかる範囲でタップ（何も選ばなくてもOK）。足りない食材は、次の画面で買い物リストに入れられます。'
+      : '今日のレシピの「主役」になる食材だけ聞いています。ざっくりでOK。常備食材は確認不要です（設定で変更できます）。')}
+    <div class="seg" data-noruby style="margin-bottom:6px">
+      <button data-mode="now" class="${shopMode ? '' : 'on'}">🍳 今から作る</button>
+      <button data-mode="shop" class="${shopMode ? 'on' : ''}">🛒 買い物に行く</button>
+    </div>
     ${Object.entries(groups).map(([g, ids]) => `<div class="cat-head">${esc(GROUP_LABELS[g])}</div>
       <div class="chips">${ids.map(k => `<button class="chip ${d.have.includes(k) ? 'on' : ''}" data-i="${esc(k)}">${esc(askLabel(k))}</button>`).join('')}</div>`).join('')}
     <div class="card tint-ai flat small" style="margin-top:16px">💡 ない食材があっても大丈夫。同じ仲間の食材（例：しめじ→干ししいたけ、黒ごま→白ごま）で代用したり、脇役の食材は「なくてもOK」として省いたりして提案します。</div>
     <div style="margin:12px 0 8px" class="btn-row">
       <button class="btn small" data-act="more">＋ ほかにも家にある食材</button>
-      <button class="btn small ghost" data-act="all">全部ある前提で見る</button>
+      ${shopMode ? '' : '<button class="btn small ghost" data-act="all">全部ある前提で見る</button>'}
     </div>
     <div style="height:20px"></div>
-    ${actionBar(d, 'これで探す')}`,
+    ${actionBar(d, shopMode ? 'レシピを探す' : 'これで探す')}`,
     mount(root) {
       const update = () => {
         root.querySelectorAll('[data-i]').forEach(b => b.classList.toggle('on', d.have.includes(b.dataset.i)));
-        root.querySelector('[data-act=next]').textContent = `これで探す（${d.have.length}個）`;
+        root.querySelector('[data-act=next]').textContent = shopMode ? `レシピを探す（${d.have.length}個ある）` : `これで探す（${d.have.length}個）`;
       };
       root.querySelectorAll('[data-i]').forEach(b => b.onclick = () => {
         const id = b.dataset.i;
@@ -215,7 +222,9 @@ function have(d) {
         next(d);
       };
       root.querySelector('[data-act=next]').onclick = finish;
-      root.querySelector('[data-act=all]').onclick = () => { d.have = null; save(d); next(d); };
+      const allBtn = root.querySelector('[data-act=all]');
+      if (allBtn) allBtn.onclick = () => { d.have = null; save(d); next(d); };
+      root.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => { d.mode = b.dataset.mode; save(d); window.dispatchEvent(new HashChangeEvent('hashchange')); });
       root.querySelector('[data-act=more]').onclick = () => {
         const sel = new Set(d.have);
         const groups2 = Object.keys(GROUP_LABELS);

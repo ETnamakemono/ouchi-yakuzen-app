@@ -2,7 +2,7 @@
 import { store } from '../store.js';
 import { esc, glossify, natureBadge, sheet, toast } from '../ui.js';
 import { gogyoSVG, natureScaleHTML, tasteChip, organCounts, cellRuby, GOGYO } from '../graphics.js';
-import { nutrition, resolveAvailability, scaleText, scaleStep, recipeTags, TAG_LABELS } from '../engine.js';
+import { nutrition, resolveAvailability, shoppingEntries, scaleText, scaleStep, recipeTags, TAG_LABELS } from '../engine.js';
 import { RECIPE_MAP, CATS } from '../../data/recipes.js';
 import { ING_MAP } from '../../data/ingredients.js';
 import { PATTERN_MAP } from '../../data/patterns.js';
@@ -16,7 +16,7 @@ window.addEventListener('hashchange', () => { wakeLock?.release?.(); wakeLock = 
 
 export default function recipe([id, from]) {
   const r = RECIPE_MAP[id];
-  const back = from === 'r' ? '#/result' : from === 'rec' ? '#/records' : '#/home';
+  const back = from === 'r' ? '#/result' : from === 'rec' ? '#/records' : from === 'shop' ? '#/shopping' : '#/home';
   if (!r) return { title: 'レシピ', back, html: `<div class="empty">レシピが見つかりませんでした。</div>` };
   const st = store.get();
   const d = from === 'r' ? st.draft : null;
@@ -24,6 +24,9 @@ export default function recipe([id, from]) {
   const avail = d && Array.isArray(d.have) ? resolveAvailability(r, d.have, st.settings) : { missing: [], subs: [], skips: [] };
   const missing = avail.missing;
   const subOf = Object.fromEntries(avail.subs.map(s => [s.id, s.alt]));
+  // 買い物リスト用：相談から来たときはその回答、それ以外は前回「ある」と答えた食材をもとに判定
+  const shopHave = d && Array.isArray(d.have) ? d.have : (st.lastHave || []);
+  const buyNames = from === 'shop' ? [] : shoppingEntries(r, shopHave, st.settings, 2).map(e => e.name.replace(/（.*/, ''));
   const n = nutrition(r);
   const tags = recipeTags(r);
   const mainIngs = [...new Set(r.items.map(i => i[0]))].map(x => ING_MAP[x]).filter(i => i && (i.group !== 'seasoning' || i.tags.length));
@@ -63,6 +66,7 @@ export default function recipe([id, from]) {
   </div>
   <table class="ing" id="ing-table">${ingRows(serves / 2)}</table>
   ${missing.length ? `<p class="small" style="color:var(--kaki)">「足りない」食材は、代わりの食材を使うか、なしでも作れるように調整してください。</p>` : ''}
+  ${buyNames.length ? `<button class="btn small block" data-act="shopadd" style="margin-top:10px">🛒 家にない食材を買い物リストに追加（${esc(buyNames.join('・'))}）</button>` : ''}
   ${avail.subs.length ? `<p class="small" style="color:var(--ai)">代用すると、味や薬膳的な働きが少し変わります（例：黒ごまは白ごまより「血」と「腎」を補う力が強いとされます）。気軽に試してみてください。</p>` : ''}
 
   <h2>作り方</h2>
@@ -133,6 +137,12 @@ export default function recipe([id, from]) {
         } else { wakeLock?.release?.(); wakeLock = null; }
       };
       root.querySelector('[data-act=made]').onclick = () => made(r, d, serves);
+      const sa = root.querySelector('[data-act=shopadd]');
+      if (sa) sa.onclick = () => {
+        store.addShopping(r, shoppingEntries(r, shopHave, st.settings, serves));
+        sa.textContent = '✓ 買い物リストに追加済み'; sa.disabled = true;
+        toast('買い物リストに追加しました', { action: 'リストを見る', onAction: () => { location.hash = '#/shopping'; } });
+      };
     },
   };
 }

@@ -478,3 +478,28 @@ table.gtable.wide thead th { text-align: center; font-size: .9em; padding-bottom
 .elc-head small { color: inherit; }
 
 .hero .season-pill { display: inline-block; }
+
+/* ── 折り返す文章は左揃え ── */
+.principle { text-align: left; padding: 12px; }
+.principle .pi { display: block; margin-bottom: 2px; }
+.howto-read div { text-align: left; padding: 8px 10px; }
+.viz-cap { text-align: left; }
+.viz-row .viz-cap { text-align: center; }
+.empty small { display: block; text-align: left; margin: 8px auto 0; max-width: 22em; }
+
+/* ── 買い物 ── */
+.rwrap { margin: 10px 0; }
+.rwrap .rcard { margin: 0; border-radius: var(--radius) var(--radius) 0 0; border-bottom: 0; box-shadow: none; }
+.rwrap .shop-add { width: 100%; border-radius: 0 0 var(--radius) var(--radius); border-color: var(--line); background: var(--paper-2); color: var(--ai); justify-content: flex-start; padding-left: 16px; min-height: 44px; }
+.rwrap .shop-add.done { color: var(--matcha-d); background: var(--matcha-l); }
+.shop-row { display: flex; gap: 12px; align-items: flex-start; width: 100%; text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 6px 0; font: inherit; color: var(--ink); cursor: pointer; min-height: 56px; }
+.shop-check { flex: none; width: 28px; height: 28px; border-radius: 8px; border: 2px solid var(--matcha); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; margin-top: 2px; }
+.shop-row.done .shop-check { background: var(--matcha); }
+.shop-row.done { opacity: .55; }
+.shop-row.done .shop-name { text-decoration: line-through; }
+.shop-body { display: flex; flex-direction: column; }
+.shop-name { font-weight: 600; }
+.shop-use { font-size: .8em; color: var(--ink-2); line-height: 1.5; }
+.shop-recipe { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px dashed var(--line); }
+.shop-recipe:last-child { border-bottom: 0; }
+.shop-recipe a { flex: 1; padding: 10px 0; text-decoration: none; color: var(--ink); font-weight: 600; }
