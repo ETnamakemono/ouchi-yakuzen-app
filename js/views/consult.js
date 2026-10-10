@@ -63,8 +63,9 @@ function who(d) {
     <div class="options">
       <button class="option ${d.who === 'self' ? 'on' : ''}" data-who="self"><span class="o-icon">🙋</span><span><span class="o-main">自分だけ（1人分）</span><span class="o-sub">エビ・カニ・貝もOK</span></span></button>
       <button class="option ${d.who === 'pair' ? 'on' : ''}" data-who="pair"><span class="o-icon">👫</span><span><span class="o-main">夫と2人（2人分）</span><span class="o-sub">${ngNote}</span></span></button>
-    </div>${actionBar(d, '次へ', { hideNext: true })}`,
+    </div>${actionBar(d, '次へ')}`,
     mount(root) {
+      root.querySelector('[data-act=next]').onclick = () => { d.serves = d.who === 'self' ? 1 : 2; next(d); };
       root.querySelectorAll('[data-who]').forEach(b => b.onclick = () => {
         d.who = b.dataset.who; d.serves = d.who === 'self' ? 1 : 2;
         next(d);
@@ -121,8 +122,9 @@ function cat(d) {
   return {
     html: `${head(d, '何を作りますか？', '主菜はあるから副菜だけ、寒いから汁物だけ…など。')}
     <div class="options">${opts.map(([k, c]) => `<button class="option ${d.cat === k ? 'on' : ''}" data-cat="${k}"><span class="o-icon">${c.icon}</span><span><span class="o-main">${esc(c.name)}</span><span class="o-sub">${esc(c.desc)}</span></span></button>`).join('')}</div>
-    ${actionBar(d, '次へ', { hideNext: true })}`,
+    ${actionBar(d, '次へ', { disabled: !d.cat })}`,
     mount(root) {
+      root.querySelector('[data-act=next]').onclick = () => next(d);
       root.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => { d.cat = b.dataset.cat; next(d); });
     },
   };
@@ -160,8 +162,9 @@ function time(d) {
   return {
     html: `${head(d, '調理時間はどれくらい？')}
     <div class="options">${Object.entries(TIME_LABELS).map(([k, l]) => `<button class="option ${d.time === k ? 'on' : ''}" data-t="${k}"><span class="o-icon">${icons[k]}</span><span class="o-main">${esc(l)}</span></button>`).join('')}</div>
-    ${actionBar(d, '次へ', { hideNext: true })}`,
+    ${actionBar(d, '次へ')}`,
     mount(root) {
+      root.querySelector('[data-act=next]').onclick = () => next(d);
       root.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { d.time = b.dataset.t; next(d); });
     },
   };

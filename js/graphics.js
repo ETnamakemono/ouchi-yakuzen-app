@@ -146,24 +146,69 @@ export function kksStates(patternIds) {
   return st;
 }
 
+// 見立てメーター：気・血・水・寒熱を、同じ形の横棒4本で表す
 export function kksHTML(patternIds, direction = 'neutral') {
   const st = kksStates(patternIds);
-  const gauge = (k) => {
-    const c = KKS[k], s = st[k], [label, level] = STATE[s];
-    const h = 64, fillH = h * level;
-    const wave = s === 'stuck' ? `<path d="M6 ${h - fillH + 6} q6 -6 12 0 t12 0 t12 0" stroke="#fff" stroke-width="2.4" fill="none"/><circle cx="24" cy="${h - fillH / 2}" r="5" fill="#fff" opacity=".85"/>` : '';
-    const arrow = s === 'up' ? `<path d="M24 ${h - fillH - 4} l-7 9 h14z" fill="${c.color}"/>` : '';
-    return `<div class="kks-item ${s !== 'ok' ? 'warn' : ''}">
-      <svg viewBox="0 0 48 ${h + 4}" width="44" height="${h}"><rect x="2" y="2" width="44" height="${h}" rx="12" fill="#f3ede0" stroke="${c.color}" stroke-width="2"/>
-        <clipPath id="kc-${k}"><rect x="2" y="2" width="44" height="${h}" rx="12"/></clipPath>
-        <rect clip-path="url(#kc-${k})" x="2" y="${2 + h - fillH}" width="44" height="${fillH}" fill="${c.color}" opacity=".85"/>${wave}${arrow}
-      </svg>
-      <div class="kks-name" style="color:${c.color}">${rb(c.name, SINGLE_READINGS[c.name])}<small>${c.role}</small></div>
-      <div class="kks-state">${label}</div></div>`;
+  const row = (name, yomi, role, color, segs, active, badge) => `
+    <div class="mt-row">
+      <div class="mt-label" style="color:${color}"><b>${rb(name, yomi)}</b><small>${role}</small></div>
+      <div class="mt-bar" style="--c:${color}">${segs.map((s, i) => `<i class="${active.includes(i) ? 'on' : ''}">${s}</i>`).join('')}</div>
+      <div class="mt-badge">${badge ? `<span>${badge}</span>` : ''}</div>
+    </div>`;
+  const kks = k => {
+    const c = KKS[k], s = st[k];
+    const active = s === 'low' ? [0] : s === 'over' ? [2] : [1];
+    const badge = s === 'stuck' ? '〰 巡りが滞り' : s === 'up' ? '⬆ 上にのぼる' : '';
+    return row(c.name, SINGLE_READINGS[c.name], c.role, c.color, ['不足', 'ちょうど', 'たまり'], active, badge);
   };
-  const temp = { cold: ['❄️', '冷え寄り', '#4f7f95'], hot: ['🔥', '熱寄り', '#cf4f3c'], mixed: ['🌗', '寒熱まじり', '#8a6aa0'], neutral: ['⚖️', '寒熱は中ほど', '#9a9285'] }[direction];
-  return `<div class="kks">${['ki', 'ketsu', 'sui'].map(gauge).join('')}
-    <div class="kks-item"><div class="kks-temp" style="background:${temp[2]}1f;color:${temp[2]}">${temp[0]}</div><div class="kks-name" style="color:${temp[2]}">寒熱</div><div class="kks-state">${temp[1]}</div></div></div>`;
+  const tActive = { cold: [0], hot: [2], mixed: [0, 2], neutral: [1] }[direction];
+  const tColor = { cold: '#4f7f95', hot: '#cf4f3c', mixed: '#8a6aa0', neutral: '#9a9285' }[direction];
+  return `<div class="mt">${['ki', 'ketsu', 'sui'].map(kks).join('')}
+    ${row('寒熱', 'かんねつ', '体の温度', tColor, ['❄ 冷え', '中ほど', '🔥 熱'], tActive, direction === 'mixed' ? '寒熱まじり' : '')}</div>`;
+}
+
+// 五臓を横一列に並べ、注目の臓腑と今の季節を示す
+export function organStripHTML(highlightEls = [], seasonEl = null) {
+  return `<div class="org-strip">${GOGYO.map(g => {
+    const hi = highlightEls.includes(g.key), now = seasonEl === g.key;
+    return `<div class="org ${hi ? 'hi' : ''}">
+      <span class="org-dot" style="background:${g.color};color:${g.text};${g.key === '金' ? 'border:1.5px solid #cfc5b0;' : ''}">${g.organ}</span>
+      <span class="org-yomi">${CELL_READINGS[g.organ]}</span>
+      <span class="org-note">${hi ? '注目' : ''}${now ? `${hi ? '・' : ''}今の季節` : ''}</span></div>`;
+  }).join('')}</div>`;
+}
+
+// ── 五行カード（色体表を1チームずつ絵で見せる） ─────────────────
+// tiles: [色体表の項目, 絵文字, 漢字, やさしい言い換え]
+const EL_CARD = {
+  木: { tiles: [['五季', '🌸', '春'], ['五味', '🍋', '酸', 'すっぱい'], ['五志', '😠', '怒', '怒り・緊張'], ['五官', '👁️', '目'], ['五主', '💪', '筋', 'すじ・筋肉'], ['五華', '💅', '爪'], ['五液', '😢', '涙'], ['五気', '🌬️', '風', '風に弱い'], ['五腑', '', '胆']],
+    signs: '目の疲れ・爪が割れる・足がつる・イライラ・食いしばり', foods: '春菊・セロリ・レモン・梅干し・レバー・にんじん' },
+  火: { tiles: [['五季', '☀️', '夏'], ['五味', '🍵', '苦', 'にがい'], ['五志', '😆', '喜', '興奮しすぎ'], ['五官', '👅', '舌'], ['五主', '🫀', '血脈', '血管'], ['五華', '😊', '顔色'], ['五液', '💦', '汗'], ['五気', '🥵', '暑', '暑さに弱い'], ['五腑', '', '小腸']],
+    signs: '眠りが浅い・ドキドキ・口内炎・汗が多い・のぼせ', foods: 'ゴーヤ・トマト・緑茶・小豆・卵・小松菜' },
+  土: { tiles: [['五季', '🌾', '長夏・土用', '季節の変わり目'], ['五味', '🍠', '甘', '自然な甘み'], ['五志', '🤔', '思', '考えすぎ'], ['五官', '👄', '口'], ['五主', '🧍', '肌肉', '肉づき'], ['五華', '💋', '唇'], ['五液', '🤤', '涎', 'よだれ'], ['五気', '💧', '湿', '湿気に弱い'], ['五腑', '', '胃']],
+    signs: '食欲がない・胃もたれ・むくみ・食後の眠気・唇の荒れ', foods: '米・かぼちゃ・さつまいも・山芋・とうもろこし・キャベツ' },
+  金: { tiles: [['五季', '🍁', '秋'], ['五味', '🌶️', '辛', 'ピリッと香る'], ['五志', '😢', '悲', '悲しみ・憂い'], ['五官', '👃', '鼻'], ['五主', '✋', '皮', '皮ふ'], ['五華', '🧑', '体毛'], ['五液', '🤧', '涕', '鼻水'], ['五気', '🏜️', '燥', '乾燥に弱い'], ['五腑', '', '大腸']],
+    signs: '鼻水・咳・のどや肌の乾燥・便秘・気分が沈む', foods: 'れんこん・大根・梨・白ごま・豆腐・ねぎ・生姜' },
+  水: { tiles: [['五季', '❄️', '冬'], ['五味', '🧂', '鹹', 'しおからい'], ['五志', '😨', '恐', '恐れ・不安'], ['五官', '👂', '耳'], ['五主', '🦴', '骨'], ['五華', '💇', '髪'], ['五液', '💧', '唾', 'つば'], ['五気', '🥶', '寒', '寒さに弱い'], ['五腑', '', '膀胱']],
+    signs: '腰から下の冷え・腰のだるさ・髪のパサつき・トイレが近い・耳鳴り', foods: '黒ごま・黒豆・ひじき・えび・くるみ・にら・山芋' },
+};
+
+const TILE_LABEL = { 五季: '季節', 五味: '味', 五志: '感情', 五官: '感覚器', 五主: '体の部位', 五華: '状態が表れる所', 五液: '体の液', 五気: '苦手な気候', 五腑: 'ペアの臓腑' };
+
+export function elementCardHTML(key, { now = false } = {}) {
+  const g = GOGYO.find(x => x.key === key), c = EL_CARD[key];
+  return `<section class="elc" style="--c:${key === '金' ? '#cfc5b0' : g.color};--hb:${g.color};--tx:${g.text};${key === '金' ? '--tile:#f0ebdf;' : ''}" id="el-${key}">
+    <header class="elc-head">
+      <span class="elc-organ">${rb(g.organ, CELL_READINGS[g.organ])}</span>
+      <span class="elc-title"><b>${rb(g.key, CELL_READINGS[g.key])}のチーム</b><small>色は${g.hue}・季節は${g.season}</small></span>
+      ${now ? '<span class="elc-now">今の季節</span>' : ''}
+    </header>
+    <p class="elc-desc">${esc(g.desc)}</p>
+    <div class="elc-grid">${c.tiles.map(([label, icon, kanji, plain]) => `
+      <div class="elc-tile"><span class="elc-l" data-noruby>${TILE_LABEL[label] || label}</span><span class="elc-i">${icon || '🤝'}</span><span class="elc-k">${cellRuby(kanji)}</span>${plain ? `<span class="elc-p">${plain}</span>` : ''}</div>`).join('')}</div>
+    <div class="elc-row"><span class="elc-tag warn">弱ると出やすいサイン</span>${esc(c.signs)}</div>
+    <div class="elc-row"><span class="elc-tag good">養う食材</span>${esc(c.foods)}</div>
+  </section>`;
 }
 
 // ── 五性スケール（料理の食材を寒〜熱に並べる） ─────────────────

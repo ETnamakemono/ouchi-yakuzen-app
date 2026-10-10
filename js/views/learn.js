@@ -1,6 +1,6 @@
 // 学び：季節の養生・用語集・体の状態（証）・体質
 import { esc, glossify, natureBadge, rubyHTML, ruby } from '../ui.js';
-import { gogyoSVG, kksHTML, natureScaleHTML, tasteChip, cellRuby, GOGYO, GOGYO_ROWS, SEASON_TO_EL } from '../graphics.js';
+import { gogyoSVG, natureScaleHTML, tasteChip, cellRuby, elementCardHTML, GOGYO, GOGYO_ROWS, SEASON_TO_EL } from '../graphics.js';
 import { CELL_READINGS } from '../../data/readings.js';
 import { ING_MAP } from '../../data/ingredients.js';
 import { getSeasonInfo, termStartDates } from '../season.js';
@@ -18,48 +18,47 @@ export default function learn([tab = 'season']) {
     html: `<div class="seg scroll" style="margin-top:8px" data-noruby>${TABS.map(([k, l]) => `<button class="${k === tab ? 'on' : ''}" onclick="location.hash='#/learn/${k}'">${l}</button>`).join('')}</div>${body()}`,
     mount(root) {
       if (tab !== 'gogyo') return;
-      const show = key => {
-        const g = GOGYO.find(x => x.key === key);
-        root.querySelector('#el-detail').innerHTML = rubyHTML(`<div class="el-card"><div class="el-dot" style="background:${g.color};color:${g.text};${g.key === '金' ? 'border:2px solid #d9cfbb' : ''}">${g.organ}</div>
-          <div><b class="serif">${cellRuby(g.key)}（${g.hue}）― ${cellRuby(g.organ)}・${cellRuby(g.fu)}</b><br><span class="small">${esc(g.desc)}</span></div></div>
-          <table class="gtable" style="margin-top:8px"><tr><th>季節</th><td>${g.season}</td><th>五味</th><td>${tasteChip(g.taste)}</td></tr>
-          <tr><th>苦手</th><td>${g.climate}</td><th>感情</th><td>${g.emotion}</td></tr>
-          <tr><th>感覚器</th><td>${g.sense}</td><th>体の部位</th><td>${g.tissue}</td></tr>
-          <tr><th>表れる所</th><td>${g.flower}</td><th>分泌液</th><td>${esc(g.fluid)}</td></tr>
-          <tr><th>方角</th><td>${g.direction}</td><th>声</th><td>${esc(g.voice)}</td></tr></table>`);
-        root.querySelectorAll('.gg-node').forEach(n => n.style.opacity = n.dataset.el === key ? 1 : .55);
-      };
-      root.querySelectorAll('.gg-node').forEach(n => { n.onclick = () => show(n.dataset.el); n.onkeydown = e => { if (e.key === 'Enter') show(n.dataset.el); }; });
-      show(SEASON_TO_EL[getSeasonInfo(new Date()).season]);
+      const jump = key => root.querySelector('#el-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      root.querySelectorAll('[data-jump]').forEach(a => { a.onclick = e => { e.preventDefault(); jump(a.dataset.jump); }; });
+      root.querySelectorAll('.gg-node').forEach(n => { n.onclick = () => jump(n.dataset.el); n.onkeydown = e => { if (e.key === 'Enter') jump(n.dataset.el); }; });
     },
   };
 }
 
 function gogyo() {
   const si = getSeasonInfo(new Date());
-  const rows = GOGYO_ROWS;
+  const now = SEASON_TO_EL[si.season];
+  // 今の季節のチームを先頭に
+  const order = [now, ...GOGYO.map(g => g.key).filter(k => k !== now)];
+  const cols = GOGYO_ROWS.filter(([, k]) => !['direction', 'voice', 'smell'].includes(k));
   return `
-  <p class="small" style="margin-top:12px">自然も体も「木・火・土・金・水」の5つの要素でできている、という考え方が<b>五行</b>。季節・臓器・色・味がつながっていて、たとえば<b>秋＝金＝肺＝白＝辛</b>。だから秋は「白い食材」で肺を潤す、と考えます。</p>
-  ${gogyoSVG({ season: SEASON_TO_EL[si.season], size: 'lg', interactive: true })}
-  <p class="viz-cap">● が今の季節。丸をタップすると詳しく見られます。<br>外まわりの矢印＝<b>相生</b>（育てる関係：木→火→土→金→水）／点線の星＝<b>相剋</b>（抑える関係）</p>
-  <div class="card" id="el-detail"></div>
+  <p style="margin-top:12px">体と自然を<b>5つのチーム</b>に分けて考えるのが「五行」。同じチームの仲間は、弱るときも元気になるときも一緒、と考えます。</p>
+  <div class="howto-read">
+    <div><b>①</b>自分の体のサインを探す</div>
+    <div><b>②</b>そのカードが弱っているチーム</div>
+    <div><b>③</b>同じカードの食材で養う</div>
+  </div>
+  <div class="el-jump">${GOGYO.map(g => `<a href="javascript:void(0)" data-jump="${g.key}" style="background:${g.color};color:${g.text};${g.key === '金' ? 'border:1.5px solid #cfc5b0;' : ''}">${cellRuby(g.organ)}<small>${g.key}・${g.season.replace(/・.*/, '')}</small></a>`).join('')}</div>
+  <p class="viz-cap">気になるチームをタップ</p>
 
-  <h2>五行色体表</h2>
-  <p class="small">中医学の古典『黄帝内経』にもとづく、自然と体の対応表。横に読むと「どの五行のグループか」がわかります。体のサインがどこに表れているかで、弱っている臓腑を推しはかるヒントになります。</p>
-  <div style="overflow-x:auto"><table class="gtable fit">
-    <tr><th></th>${GOGYO.map(g => `<td style="background:${g.color};color:${g.text};font-weight:700;${g.key === '金' ? 'border:1px solid #d9cfbb' : ''}">${cellRuby(g.key)}</td>`).join('')}</tr>
-    ${rows.map(([l, k]) => `<tr><th>${l.replace(/（(.*)）/, '<small>$1</small>')}</th>${GOGYO.map(g => `<td style="background:${g.color}1f">${k === 'taste' ? tasteChip(g.taste) : cellRuby(g[k].replace(/（.*/, ''))}</td>`).join('')}</tr>`).join('')}
-  </table></div>
-  <div class="tip-card"><b>色体表で体のサインを読む例</b><ul class="points">
-    <li><b>水っぽい鼻水</b>：五液の「涕（鼻水）」・五官の「鼻」→ <b>金＝肺</b></li>
-    <li><b>二枚爪</b>：五華の「爪」→ <b>木＝肝</b>（肝が蓄える血の不足）</li>
-    <li><b>食いしばり</b>：五主の「筋」・五志の「怒」→ <b>木＝肝</b></li>
-    <li><b>腰から下の冷え</b>：五気の「寒」・腰は腎の府 → <b>水＝腎</b></li>
-    <li><b>胃もたれ・ガス</b>：五腑の「胃」→ <b>土＝脾</b></li></ul></div>
+  ${order.map(k => elementCardHTML(k, { now: k === now })).join('')}
+
+  <h2>チーム同士の関係</h2>
+  ${gogyoSVG({ season: now, size: 'lg', interactive: true })}
+  <p class="viz-cap">● が今の季節。丸をタップするとカードへ移動します。<br>外まわりの矢印＝<b>相生</b>（次のチームを育てる）／点線の星＝<b>相剋</b>（行きすぎを抑える）</p>
+
+  <details class="more"><summary>📋 一覧表（五行色体表）で見る</summary><div class="body">
+    <p class="small">横1行が1つのチームです。表は横にスクロールできます。</p>
+    <div style="overflow-x:auto"><table class="gtable wide">
+      <thead><tr><th></th>${cols.map(([l]) => `<th>${l.replace(/（.*/, '')}</th>`).join('')}</tr></thead>
+      ${GOGYO.map(g => `<tr><th class="rowh" style="background:${g.color};color:${g.text};${g.key === '金' ? 'border:1px solid #d9cfbb' : ''}">${cellRuby(g.key)}</th>
+        ${cols.map(([, k]) => `<td style="background:${g.color}1f">${k === 'taste' ? tasteChip(g.taste) : cellRuby(g[k].replace(/（.*/, ''))}</td>`).join('')}</tr>`).join('')}
+    </table></div>
+    <p class="small">中医学の古典『黄帝内経』にもとづく対応表です。</p>
+  </div></details>
 
   <h2>気・血・水</h2>
   <p class="small">体をめぐる3つの要素。「足りない」「滞る」「たまる」のどれが起きているかで、選ぶ食材が変わります。</p>
-  ${kksHTML([], 'neutral')}
   <div class="principles" style="margin-top:10px">
     <div class="principle"><span class="pi">🔋</span><b>不足（虚）</b>補う食材を<br><small>例：気虚→米・芋・鶏肉</small></div>
     <div class="principle"><span class="pi">〰️</span><b>滞り（滞・瘀）</b>巡らせる食材を<br><small>例：気滞→香りの野菜</small></div>

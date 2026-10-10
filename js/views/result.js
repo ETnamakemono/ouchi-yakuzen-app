@@ -9,7 +9,7 @@ import { COMPANION_MAP } from '../../data/companions.js';
 import { ING_MAP } from '../../data/ingredients.js';
 import { SEASONS } from '../../data/seasons.js';
 import { illustSVG } from '../illust.js';
-import { cellRuby, gogyoSVG, kksHTML, PATTERN_ORGANS, ORGAN_TO_EL, SEASON_TO_EL, WORRY_SIGNS, GOGYO } from '../graphics.js';
+import { kksHTML, organStripHTML, PATTERN_ORGANS, ORGAN_TO_EL, SEASON_TO_EL, WORRY_SIGNS, GOGYO } from '../graphics.js';
 
 const short = id => ING_MAP[id].name.replace(/（.*/, '');
 
@@ -24,7 +24,7 @@ export function recipeCard(item, from = 'r') {
       ${item.missing?.length ? `<div class="r-missing">あと「${esc(item.missing.map(id => ING_MAP[id].name).join('・'))}」があれば</div>` : ''}
       ${item.subs?.length ? `<div class="r-missing" style="color:var(--ai)">${esc(item.subs.map(s => `${short(s.id)}→${short(s.alt)}`).join('、'))}で代用</div>` : ''}
       ${item.skips?.length ? `<div class="r-missing" style="color:var(--ink-3)">${esc(item.skips.map(short).join('・'))}はなくてもOK</div>` : ''}
-      ${item.reasons?.length ? `<div class="r-why">${item.reasons.map(t => `<span class="tag matcha">${esc(t)}</span>`).join('')}</div>` : ''}
+      ${item.reasons?.length ? `<div class="r-why">${item.reasons.slice(0, 2).map(t => `<span class="tag matcha">${esc(t)}</span>`).join('')}</div>` : ''}
     </div></a>`;
 }
 
@@ -71,50 +71,39 @@ export default function result() {
   const relax = zero ? relaxOptions(cond, ctx, settings, have) : [];
   const flags = d.worries.map(w => WORRY_MAP[w]).filter(w => w?.redflag);
 
+  const seasonEl = SEASON_TO_EL[season.season];
+  const seasonIcon = { spring: '🌸', summer: '☀️', longsummer: '🌾', autumn: '🍁', winter: '❄️' }[season.season];
+  const evilPlain = { 風: '風', 暑: '暑さ', 湿: '湿気', 燥: '乾燥', 寒: '寒さ' }[sd.evil];
+  const compNotes = companions.list.length ? companionNotes(companions, cond.cat) : [];
+  const dot = x => { const g = GOGYO.find(e => e.key === x.el); return `<span class="el-dot" style="width:30px;height:30px;font-size:.8em;flex:none;background:${g.color};color:${g.text};${g.key === '金' ? 'border:1px solid #d9cfbb' : ''}">${g.organ}</span>`; };
+
+  // ページの方針：上から「見立て → 食べ方 → レシピ」の要点だけ。くわしい解説は「もっと知る」に折りたたむ
   const html = `
-  <div class="chips" style="gap:4px;margin-top:6px">${condChips.map(c => `<span class="tag">${esc(c)}</span>`).join('')}</div>
+  <div class="cond-line">${condChips.map(c => `<span class="tag">${esc(c)}</span>`).join('')}</div>
   <a href="#/consult/worries" class="small">条件を変える</a>
 
   <div class="card">
     <div class="label">${noWorry ? '今日の養生テーマ' : '今日の見立て'}</div>
-    <div class="viz-row">
-      <div>${kksHTML(diag.top.map(t => t.id), diag.direction)}</div>
-      <div>${gogyoSVG({ highlight: focusEls, season: SEASON_TO_EL[season.season], size: 'sm', labels: false })}
-        <div class="viz-cap">注目：<b>${cellRuby(focusOrgans.join('・'))}</b><br>（今の季節は${cellRuby(sd.organ)}）</div></div>
-    </div>
-    ${diag.top.map((t, i) => `
-      <div class="diag-name">${i ? '<span class="small muted">＋</span> ' : ''}${glossify(t.pattern.name)}</div>
-      <p style="margin:0 0 .6em">${glossify(t.pattern.plain)}${noWorry ? '' : 'の傾向が考えられます。'}</p>`).join('')}
-    ${diag.contradiction ? `<div class="card tint-ai flat small" style="margin:8px 0 0">冷えのサインと熱のサインが両方あります。「上は熱いのに下は冷える」など寒熱が入り混じった状態のこともあるので、今日はどちらにも偏らない「平」の性質の料理を中心に選んでいます。</div>` : ''}
-    ${noWorry ? `<p class="small" style="margin:0">特に不調がない日は、季節${st.constitution ? 'と体質' : ''}に合わせた「予防の養生」を。</p>` : ''}
+    ${diag.top.map(t => `
+      <div class="sum-pill"><span class="sp-icon">${t.pattern.icon}</span>
+        <div><div class="sp-name">${glossify(t.pattern.name)}</div><div class="sp-short">${esc(t.pattern.short)}</div></div></div>`).join('')}
+    <div class="mini-h">からだの状態</div>
+    ${kksHTML(diag.top.map(t => t.id), diag.direction)}
+    <div class="mini-h">注目の臓腑</div>
+    ${organStripHTML(focusEls, seasonEl)}
+    ${diag.contradiction ? `<p class="small" style="margin:.6em 0 0">🌗 冷えと熱のサインが両方あるので、どちらにも偏らない「平」の料理を中心に選んでいます。</p>` : ''}
   </div>
 
-  ${worryNotes.length ? `<h2>あなたの悩みを薬膳で読み解くと</h2>${worryNotes.map(w => `<div class="tip-card"><b>${esc(w.name)}</b><br>${glossify(w.note)}</div>`).join('')}` : ''}
+  <div class="season-banner" style="background:${sd.color}22"><span style="font-size:1.6em">${seasonIcon}</span>
+    <span><b>${esc(season.term.name)}・${esc(sd.name)}</b>は「${esc(sd.organ)}」が弱りやすい季節（${evilPlain}に注意）${inSeason.length && !noWorry ? '。今日の不調は季節の影響も' : ''}${season.doyo ? '。いまは土用、胃腸をいたわって' : ''}</span></div>
 
-  ${signs.length ? `<h2>五行色体表で見ると</h2>
-    <div class="viz-row" style="grid-template-columns:1fr 140px">
-      <div>${signs.map(x => { const g = GOGYO.find(e => e.key === x.el); return `<div style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><span class="el-dot" style="width:30px;height:30px;font-size:.8em;flex:none;background:${g.color};color:${g.text};${g.key === '金' ? 'border:1px solid #d9cfbb' : ''}">${g.organ}</span><span class="small"><b>${esc(x.w.name)}</b><br>${esc(x.why)}</span></div>`; }).join('')}</div>
-      <div>${gogyoSVG({ highlight: signEls, season: SEASON_TO_EL[season.season], size: 'sm', labels: false })}</div>
-    </div>
-    ${signEls.length >= 2 ? `<p class="small">サインが複数の臓腑にまたがっています。五行はお互いに助け合い（相生）・抑え合う（相剋）関係なので、一つを整えるとほかにも良い影響が広がると考えます。</p>` : ''}
-    <a class="small" href="#/learn/gogyo">五行色体表を見る ›</a>` : ''}
-
-  <h2>季節との関係</h2>
-  <p>${glossify(seasonText)}</p>
-  ${season.doyo ? `<p class="small">🍂 今は土用。${glossify(season.doyo.summary)}</p>` : ''}
-
-  <h2>食養生のアドバイス</h2>
-  <div class="card flat">
-    <div class="label">おすすめの食材</div>
-    <div>${adv.foods.map(i => `<span class="food-chip">${natureBadge(i.nature)}${esc(i.name.replace(/（.*/, ''))}</span>`).join('')}</div>
-    ${adv.cooking ? `<p class="small" style="margin:.6em 0 0">🍳 料理の目安：${esc(adv.cooking)}</p>` : ''}
+  <h2>食べ方のポイント</h2>
+  <div class="two-col">
+    <div class="gb good"><h4>◎ とりたい食材</h4>${adv.foods.slice(0, 6).map(i => `<span class="food-chip">${natureBadge(i.nature)}${esc(i.name.replace(/（.*/, ''))}</span>`).join('')}</div>
+    <div class="gb bad"><h4>△ 控えめに</h4><ul>${adv.avoid.slice(0, 3).map(a => `<li>${esc(a)}</li>`).join('')}</ul></div>
   </div>
-  <ul class="points">${adv.tips.map(t => `<li>${glossify(t)}</li>`).join('')}</ul>
-  ${adv.avoid.length ? `<p class="small">控えめにしたいもの：${adv.avoid.map(a => `<span class="tag beni">${esc(a)}</span>`).join('')}</p>` : ''}
-
-  ${companions.list.length ? `<h2>合わせる料理とのバランス</h2>${companionNotes(companions, cond.cat).map(n => `<p>${esc(n)}</p>`).join('')}
-    ${d.companions.includes('yogurt') ? `<div class="tip-card"><b>ヨーグルトを食べるときのひと工夫</b><ul class="points">${ING_MAP.yogurt.howto.map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}
-    ${d.companions.includes('fruit') ? `<div class="tip-card"><b>果物を食べるときのひと工夫</b><ul class="points"><li>果物の多くは涼〜寒性。冷えが気になる日は、常温に戻すか、焼く・煮る・レンジで温めると冷やす性質がやわらぎます。</li><li>${esc(ING_MAP.banana.howto[0])}</li><li>${esc(ING_MAP.kaki.howto[0])}</li></ul><a class="small" href="#/learn/howto">食べ方の知恵をもっと見る ›</a></div>` : ''}` : ''}
+  ${adv.cooking ? `<div class="tips-line"><span class="ti2">🍳</span><span>${esc(adv.cooking)}がおすすめ</span></div>` : ''}
+  ${compNotes[0] ? `<div class="tips-line"><span class="ti2">🍽️</span><span>${esc(compNotes[0])}</span></div>` : ''}
 
   <h2>おすすめレシピ</h2>
   ${shown.ready.length ? `<div class="label small">${have === null ? '食材がそろっている前提' : '今ある食材で作れる'}</div>${shown.ready.map(x => recipeCard(x)).join('')}` : ''}
@@ -126,6 +115,24 @@ export default function result() {
     <p style="margin-top:0">この条件に合うレシピが見つかりませんでした。条件を少し広げてみませんか？</p>
     ${relax.length ? relax.map((o, i) => `<button class="btn block" style="margin:6px 0" data-relax="${i}">${esc(o.label)}（${o.count}件）</button>`).join('') : '<p class="small">悩みや料理の種類を変えて、もう一度お試しください。</p>'}
   </div>` : ''}
+
+  <h2>もっと知る</h2>
+  <details class="more"><summary>📖 見立てをくわしく</summary><div class="body">
+    ${diag.top.map(t => `<p><b>${esc(t.pattern.name)}</b>：${glossify(t.pattern.plain)}${noWorry ? '' : 'の傾向が考えられます。'}</p>`).join('')}
+    <ul class="points">${adv.tips.map(t => `<li>${glossify(t)}</li>`).join('')}</ul>
+    ${noWorry ? `<p class="small">特に不調がない日は、季節${st.constitution ? 'と体質' : ''}に合わせた「予防の養生」を。</p>` : ''}
+  </div></details>
+  ${worryNotes.length ? `<details class="more"><summary>🔍 悩みを薬膳で読み解くと</summary><div class="body">${worryNotes.map(w => `<p><b>${esc(w.name)}</b><br>${glossify(w.note)}</p>`).join('')}</div></details>` : ''}
+  ${signs.length ? `<details class="more"><summary>🎨 五行色体表で見ると</summary><div class="body">
+    ${signs.map(x => `<div style="display:flex;gap:8px;align-items:flex-start;margin:8px 0">${dot(x)}<span><b>${esc(x.w.name)}</b><br><span class="small">${esc(x.why)}</span></span></div>`).join('')}
+    <a class="small" href="#/learn/gogyo">五行のカードを見る ›</a></div></details>` : ''}
+  <details class="more"><summary>${seasonIcon} 季節との関係</summary><div class="body"><p>${glossify(seasonText)}</p>
+    ${season.doyo ? `<p class="small">🍂 今は土用。${glossify(season.doyo.summary)}</p>` : ''}</div></details>
+  ${compNotes.length > 1 || d.companions.includes('yogurt') || d.companions.includes('fruit') ? `<details class="more"><summary>🍽️ 一緒に食べるもののひと工夫</summary><div class="body">
+    ${compNotes.slice(1).map(n => `<p>${esc(n)}</p>`).join('')}
+    ${d.companions.includes('yogurt') ? `<p><b>ヨーグルト</b></p><ul class="points">${ING_MAP.yogurt.howto.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+    ${d.companions.includes('fruit') ? `<p><b>果物</b></p><ul class="points"><li>果物の多くは涼〜寒性。冷えが気になる日は、常温に戻すか、焼く・煮る・レンジで温めると冷やす性質がやわらぎます。</li><li>${esc(ING_MAP.banana.howto[0])}</li><li>${esc(ING_MAP.kaki.howto[0])}</li></ul><a class="small" href="#/learn/howto">食べ方の知恵をもっと見る ›</a>` : ''}
+  </div></details>` : ''}
 
   ${flags.length ? `<div class="card tint-beni flat small"><b>⚠️ 受診の目安</b><ul class="points">${flags.map(w => `<li>${esc(w.redflag)}</li>`).join('')}</ul></div>` : ''}
   <p class="disclaimer">見立ては、選んだ症状と季節${st.constitution ? '・体質' : ''}から薬膳の考え方で導いた目安で、診断ではありません。不調が続く・強いときは医療機関へ。</p>

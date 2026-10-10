@@ -165,7 +165,7 @@ export function scoreRecipe(recipe, ctx) {
   diag.top.forEach(({ id, pattern }, i) => {
     if (recipe.targets.includes(id)) {
       score += i === 0 ? 6 : 3;
-      reasons.push(`見立て「${pattern.name}」に合う`);
+      reasons.push(`${pattern.name.replace(/（.*/, '')}に合う`);
     }
     const hits = pattern.mainTags.filter(t => tags.has(t)).length;
     score += Math.min(hits, 3) * (i === 0 ? 1 : 0.5);

@@ -393,3 +393,88 @@ table.gtable.fit { table-layout: fixed; }
 table.gtable.fit th { white-space: normal; width: 4.6em; line-height: 1.35; font-size: .92em; padding-right: 2px; }
 table.gtable.fit th small { display: block; font-size: .78em; color: var(--ink-3); }
 table.gtable.fit td { padding: 4px 0; overflow-wrap: anywhere; }
+
+/* ── 見立てメーター ── */
+.mt { display: grid; gap: 8px; margin: 12px 0 4px; }
+.mt-row { display: grid; grid-template-columns: 74px 1fr; column-gap: 10px; align-items: center; }
+.mt-label { display: flex; flex-direction: column; line-height: 1.15; }
+.mt-label b { font-family: var(--serif); font-size: 1.25em; white-space: nowrap; }
+.mt-label small { font-size: .68em; color: var(--ink-3); white-space: nowrap; }
+.mt-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+.mt-bar i { font-style: normal; text-align: center; font-size: .78em; line-height: 1; padding: 9px 0; border-radius: 8px; background: #f1ebde; color: #b9b1a2; white-space: nowrap; }
+.mt-bar i.on { background: var(--c); color: #fff; font-weight: 700; }
+.mt-badge { grid-column: 2; font-size: .76em; color: #b0631a; font-weight: 700; }
+.mt-badge:empty { display: none; }
+.mt-badge span { display: inline-block; margin-top: 3px; background: var(--kaki-l); border-radius: 8px; padding: 1px 8px; }
+.org-strip { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; text-align: center; margin: 6px 0 2px; }
+.org { opacity: .38; display: flex; flex-direction: column; align-items: center; }
+.org.hi { opacity: 1; }
+.org-dot { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-weight: 700; font-size: 1.1em; }
+.org.hi .org-dot { box-shadow: 0 0 0 3px var(--card), 0 0 0 5.5px var(--kaki); }
+.org-yomi { font-size: .66em; color: var(--ink-2); margin-top: 6px; line-height: 1.2; }
+.org-note { font-size: .64em; color: var(--kaki); font-weight: 700; min-height: 1.3em; line-height: 1.3; white-space: nowrap; }
+.sum-pill { display: flex; align-items: center; gap: 10px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 14px; padding: 8px 12px; margin: 8px 0; }
+.sum-pill .sp-icon { font-size: 1.7em; flex: none; }
+.sum-pill .sp-name { font-family: var(--serif); font-weight: 700; font-size: 1.15em; line-height: 1.6; }
+.sum-pill .sp-short { font-size: .86em; color: var(--ink-2); line-height: 1.45; }
+.mini-h { font-size: .78em; color: var(--ink-2); letter-spacing: .08em; margin: 14px 0 2px; font-weight: 600; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gb { border-radius: 12px; padding: 10px; font-size: .88em; }
+.gb.good { background: var(--matcha-l); }
+.gb.bad { background: var(--beni-l); }
+.gb h4 { margin: 0 0 6px; font-size: .92em; font-family: var(--serif); }
+.gb .food-chip { font-size: .92em; margin: 2px 3px 2px 0; padding: 2px 8px 2px 3px; }
+.gb ul { margin: 0; padding-left: 1.1em; line-height: 1.6; }
+.tips-line { display: flex; gap: 8px; align-items: flex-start; font-size: .9em; margin: 8px 0 0; line-height: 1.6; }
+.tips-line .ti2 { flex: none; }
+.season-banner { display: flex; gap: 10px; align-items: center; border-radius: 12px; padding: 8px 12px; font-size: .9em; line-height: 1.55; margin: 10px 0; }
+details.more { border: 1px solid var(--line); border-radius: 12px; background: var(--card); margin: 8px 0; }
+details.more > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 6px 14px; font-weight: 600; font-size: .95em; }
+details.more > summary::-webkit-details-marker { display: none; }
+details.more > summary::after { content: "＋"; margin-left: auto; color: var(--ink-3); font-weight: 400; }
+details.more[open] > summary::after { content: "－"; }
+details.more > .body { padding: 0 14px 12px; font-size: .92em; }
+.cond-line { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin-top: 6px; padding-bottom: 2px; }
+.cond-line::-webkit-scrollbar { display: none; }
+.cond-line .tag { flex: none; margin: 0; }
+
+/* ── 五行カード ── */
+.elc { border: 2px solid var(--c); border-radius: 16px; overflow: hidden; margin: 14px 0; background: var(--card); scroll-margin-top: 60px; }
+.elc-head { display: flex; align-items: center; gap: 12px; background: var(--hb); color: var(--tx); padding: 10px 14px; }
+.elc-organ { font-family: var(--serif); font-size: 2em; font-weight: 700; line-height: 1.3; }
+.elc-head rt { color: inherit; opacity: .9; }
+.elc-title { flex: 1; display: flex; flex-direction: column; line-height: 1.5; }
+.elc-title b { font-family: var(--serif); font-size: 1.1em; }
+.elc-title small { color: inherit; opacity: .9; font-size: .78em; }
+.elc-now { background: var(--kaki); color: #fff; border-radius: 12px; font-size: .72em; font-weight: 700; padding: 3px 10px; white-space: nowrap; }
+.elc-desc { margin: 10px 14px 8px; font-size: .88em; line-height: 1.6; }
+.elc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 0 10px; }
+.elc-tile { background: var(--tile, color-mix(in srgb, var(--hb) 13%, #fff)); border-radius: 12px; padding: 6px 2px 8px; display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 98px; }
+.elc-l { font-size: .62em; color: var(--ink-3); letter-spacing: .05em; line-height: 1.9; }
+.elc-i { font-size: 1.55em; line-height: 1.25; }
+.elc-k { font-family: var(--serif); font-weight: 700; font-size: 1.05em; line-height: 1.75; }
+.elc-p { font-size: .66em; color: var(--ink-2); line-height: 1.25; }
+.elc-row { margin: 10px 14px; font-size: .88em; line-height: 1.7; }
+.elc-row:last-child { margin-bottom: 14px; }
+.elc-tag { display: inline-block; font-size: .78em; font-weight: 700; border-radius: 8px; padding: 0 8px; margin-right: 6px; }
+.elc-tag.warn { background: var(--kaki-l); color: #b0631a; }
+.elc-tag.good { background: var(--matcha-l); color: var(--matcha-d); }
+.howto-read { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 12px 0; }
+.howto-read div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px 6px; text-align: center; font-size: .78em; line-height: 1.45; }
+.howto-read b { display: block; font-size: 1.5em; }
+.el-jump { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 10px 0; }
+.el-jump a { text-decoration: none; border-radius: 12px; padding: 4px 0 6px; text-align: center; font-family: var(--serif); font-weight: 700; font-size: 1.15em; line-height: 1.5; }
+.el-jump a small { display: block; font-family: var(--sans); font-weight: 400; font-size: .5em; opacity: .9; line-height: 1.4; }
+.el-jump a rt { color: inherit; opacity: .9; }
+table.gtable.wide { min-width: 620px; }
+table.gtable.wide th.rowh { position: sticky; left: 0; z-index: 1; border-radius: 6px; padding: 4px 6px; text-align: center; font-family: var(--serif); font-weight: 700; font-size: 1.1em; }
+table.gtable.wide thead th { text-align: center; font-size: .9em; padding-bottom: 2px; }
+
+/* 色つき背景の上のルビは白くはっきり */
+.season-pill rt { color: #fff; font-weight: 700; font-size: .56em; }
+.season-pill { line-height: 1.9; padding-top: 6px !important; }
+
+.el-jump a small { color: inherit; opacity: .92; }
+.elc-head small { color: inherit; }
+
+.hero .season-pill { display: inline-block; }

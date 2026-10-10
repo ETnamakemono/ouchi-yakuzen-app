@@ -5,7 +5,7 @@
 
 export const PATTERNS = [
   {
-    id: 'kikyo', name: '気虚', kana: 'ききょ', group: 'kanagawa', temp: 'neutral',
+    id: 'kikyo', icon: '🔋', short: 'エネルギー（気）が足りず、疲れやすい', name: '気虚', kana: 'ききょ', group: 'kanagawa', temp: 'neutral',
     plain: '体を動かすエネルギー「気」が足りず、疲れやすく、胃腸の働きも弱りがちな状態',
     signs: ['疲れやすい・だるい', '食欲がない', 'かぜをひきやすい', '汗をかきやすい'],
     mainTags: ['qi_tonify', 'spleen'], needTags: ['qi_move'], subTags: ['drain_damp'],
@@ -14,7 +14,7 @@ export const PATTERNS = [
     avoid: ['冷たい飲み物・生もの', '食べすぎ・油っこいもの'],
   },
   {
-    id: 'kitai', name: '気うつ・気滞', kana: 'きうつ・きたい', group: 'kanagawa', temp: 'neutral',
+    id: 'kitai', icon: '🌀', short: '気の巡りが滞り、張りやすい', name: '気うつ・気滞', kana: 'きうつ・きたい', group: 'kanagawa', temp: 'neutral',
     plain: '気の巡りが滞り、ストレスがたまりやすく、張りや詰まりを感じやすい状態',
     signs: ['イライラ・ストレス', '気分が沈む', 'お腹や胸が張る', '頭が重い', '眠りが浅い'],
     mainTags: ['qi_move'], needTags: [], subTags: ['drain_damp', 'blood_tonify', 'calm'],
@@ -23,7 +23,7 @@ export const PATTERNS = [
     avoid: ['我慢してのドカ食い', '刺激の強すぎるもの'],
   },
   {
-    id: 'kigyaku', name: '気逆', kana: 'きぎゃく', group: 'kanagawa', temp: 'hot',
+    id: 'kigyaku', icon: '⬆️', short: '気が上へのぼり、のぼせ・イライラしやすい', name: '気逆', kana: 'きぎゃく', group: 'kanagawa', temp: 'hot',
     plain: '気が上へ突き上げるように逆流し、イライラやのぼせ、急な頭痛が起こりやすい状態',
     signs: ['イライラ', '急に起こる頭痛', 'のぼせ', 'ドキドキ'],
     mainTags: ['qi_descend'], needTags: ['clear_heat'], subTags: ['qi_move', 'drain_damp', 'blood_tonify'],
@@ -32,7 +32,7 @@ export const PATTERNS = [
     avoid: ['辛いもの・お酒の摂りすぎ', 'カフェインの摂りすぎ'],
   },
   {
-    id: 'gesho', name: '下焦の虚', kana: 'げしょうのきょ', group: 'kanagawa', temp: 'cold',
+    id: 'gesho', icon: '🦵', short: '腰から下の力が弱り、冷えやすい', name: '下焦の虚', kana: 'げしょうのきょ', group: 'kanagawa', temp: 'cold',
     plain: 'おへそより下（下焦＝腎のあたり）の力が弱り、下半身の冷えや腰の重だるさが出やすい状態',
     signs: ['下半身の冷え', '腰が重い・だるい', 'トイレが近い', '足がつる'],
     mainTags: ['kidney'], needTags: [], subTags: ['drain_damp', 'blood_tonify', 'warm'],
@@ -41,7 +41,7 @@ export const PATTERNS = [
     avoid: ['冷たい飲食', '体を冷やす夏野菜の食べすぎ'],
   },
   {
-    id: 'kekkyo', name: '血虚', kana: 'けっきょ', group: 'kanagawa', temp: 'neutral',
+    id: 'kekkyo', icon: '🩸', short: '栄養を運ぶ「血」が足りない', name: '血虚', kana: 'けっきょ', group: 'kanagawa', temp: 'neutral',
     plain: '体に栄養と潤いを運ぶ「血」が足りず、肌や髪の乾燥、目の疲れ、立ちくらみが出やすい状態',
     signs: ['肌の乾燥', '髪のパサつき・抜け毛', '目の疲れ', '立ちくらみ', '眠りが浅い'],
     mainTags: ['blood_tonify'], needTags: ['blood_move'], subTags: ['qi_move', 'moisten'],
@@ -50,7 +50,7 @@ export const PATTERNS = [
     avoid: ['過度な食事制限', '夜ふかし'],
   },
   {
-    id: 'oketsu', name: '瘀血', kana: 'おけつ', group: 'kanagawa', temp: 'neutral',
+    id: 'oketsu', icon: '🔄', short: '血の巡りが滞っている', name: '瘀血', kana: 'おけつ', group: 'kanagawa', temp: 'neutral',
     plain: '血の巡りが滞り、肩こりや生理痛、くすみなど「滞り」のサインが出やすい状態',
     signs: ['肩こり', '生理痛・生理不順', '頭痛', 'くすみ・クマ'],
     mainTags: ['blood_move'], needTags: [], subTags: ['blood_tonify', 'qi_move'],
@@ -59,7 +59,7 @@ export const PATTERNS = [
     avoid: ['冷たいもの', '脂っこいもの・甘いものの摂りすぎ'],
   },
   {
-    id: 'suidoku', name: '水毒', kana: 'すいどく', group: 'kanagawa', temp: 'neutral',
+    id: 'suidoku', icon: '💧', short: '余分な水がたまっている', name: '水毒', kana: 'すいどく', group: 'kanagawa', temp: 'neutral',
     plain: '体の中の水分の巡りが滞り、余分な水がたまってむくみや頭重、めまいが起こりやすい状態',
     signs: ['むくみ', 'めまい', '頭が重い', '天気で不調', 'お腹がゆるい'],
     mainTags: ['drain_damp'], needTags: ['qi_move'], subTags: ['qi_tonify', 'spleen'],
@@ -68,7 +68,7 @@ export const PATTERNS = [
     avoid: ['冷たい飲み物・生もの', '甘いもの・塩分の摂りすぎ'],
   },
   {
-    id: 'boshin', name: '亡津液', kana: 'ぼうしんえき', group: 'kanagawa', temp: 'hot',
+    id: 'boshin', icon: '🏜️', short: '体の潤いが足りない', name: '亡津液', kana: 'ぼうしんえき', group: 'kanagawa', temp: 'hot',
     plain: '体を潤す水分（津液）が不足し、便秘や口・肌の渇きが起こりやすい状態',
     signs: ['便秘', '口の渇き', '肌の乾燥', 'のどの乾燥'],
     mainTags: ['moisten'], needTags: [], subTags: ['blood_tonify', 'qi_tonify', 'bowel'],
@@ -77,7 +77,7 @@ export const PATTERNS = [
     avoid: ['辛いもの・揚げ物', 'お酒・コーヒーの摂りすぎ'],
   },
   {
-    id: 'yokyo', name: '陽虚（冷え）', kana: 'ようきょ', group: 'tcm', temp: 'cold',
+    id: 'yokyo', icon: '❄️', short: '体を温める力が弱い', name: '陽虚（冷え）', kana: 'ようきょ', group: 'tcm', temp: 'cold',
     plain: '体を温める力（陽気）が弱く、手足や体が冷えやすい状態',
     signs: ['手足の冷え', 'お腹の冷え', '寒がり', 'お腹がゆるい'],
     mainTags: ['warm'], needTags: ['qi_tonify'], subTags: ['qi_move', 'kidney', 'spleen'],
@@ -86,7 +86,7 @@ export const PATTERNS = [
     avoid: ['冷たい飲食・生野菜の食べすぎ', '南国の果物・夏野菜の食べすぎ'],
   },
   {
-    id: 'inkyo', name: '陰虚（ほてり・乾き）', kana: 'いんきょ', group: 'tcm', temp: 'hot',
+    id: 'inkyo', icon: '🔥', short: '潤いが減って、熱がこもりやすい', name: '陰虚（ほてり・乾き）', kana: 'いんきょ', group: 'tcm', temp: 'hot',
     plain: '体を潤し冷ます力（陰）が不足し、ほてり・寝汗・乾燥が出やすい状態',
     signs: ['のぼせ・ほてり', '口の渇き', '寝汗', '眠りが浅い', '肌の乾燥'],
     mainTags: ['moisten'], needTags: ['clear_heat'], subTags: ['blood_tonify', 'calm'],
@@ -95,7 +95,7 @@ export const PATTERNS = [
     avoid: ['辛いもの・揚げ物', '夜ふかし'],
   },
   {
-    id: 'tanshitsu', name: '痰湿', kana: 'たんしつ', group: 'tcm', temp: 'neutral',
+    id: 'tanshitsu', icon: '🫧', short: '余分な水分や脂がたまり、重だるい', name: '痰湿', kana: 'たんしつ', group: 'tcm', temp: 'neutral',
     plain: '余分な水分や脂肪が「痰湿」として体にたまり、体が重だるく、胃もたれしやすい状態',
     signs: ['体が重だるい', '胃もたれ', '食後に眠くなる', '痰が多い', '甘いものがやめられない'],
     mainTags: ['phlegm', 'drain_damp'], needTags: ['spleen'], subTags: ['qi_move', 'digest'],
@@ -104,7 +104,7 @@ export const PATTERNS = [
     avoid: ['甘いもの・脂っこいもの', '冷たい飲み物', '食べすぎ'],
   },
   {
-    id: 'shitsunetsu', name: '湿熱', kana: 'しつねつ', group: 'tcm', temp: 'hot',
+    id: 'shitsunetsu', icon: '♨️', short: '余分な水分と熱がこもっている', name: '湿熱', kana: 'しつねつ', group: 'tcm', temp: 'hot',
     plain: '余分な水分と熱がこもり、吹き出物・口の苦み・重だるさが出やすい状態',
     signs: ['肌荒れ・吹き出物', '口内炎', '黄色い鼻水', '体が重く暑がり'],
     mainTags: ['clear_heat', 'drain_damp'], needTags: [], subTags: ['qi_move'],
@@ -113,7 +113,7 @@ export const PATTERNS = [
     avoid: ['揚げ物・お酒', '辛いもの・甘いもの'],
   },
   {
-    id: 'fukan', name: '風寒（冷えのかぜ）', kana: 'ふうかん', group: 'tcm', temp: 'cold',
+    id: 'fukan', icon: '🧣', short: '冷えが体に入った、かぜのひきはじめ', name: '風寒（冷えのかぜ）', kana: 'ふうかん', group: 'tcm', temp: 'cold',
     plain: '冷たい風（寒邪）が体に入り、ゾクゾクする寒気・透明な鼻水などが出る、かぜのひきはじめの状態',
     signs: ['ゾクゾクする寒気', '透明な鼻水・くしゃみ', '首肩のこわばり'],
     mainTags: ['exterior', 'warm'], needTags: [], subTags: ['qi_tonify'],
@@ -122,7 +122,7 @@ export const PATTERNS = [
     avoid: ['冷たい飲食', '体を冷やす果物'],
   },
   {
-    id: 'funetsu', name: '風熱（熱っぽいかぜ）', kana: 'ふうねつ', group: 'tcm', temp: 'hot',
+    id: 'funetsu', icon: '🤒', short: '熱をもった、かぜの状態', name: '風熱（熱っぽいかぜ）', kana: 'ふうねつ', group: 'tcm', temp: 'hot',
     plain: '熱をもった邪気が入り、のどの痛み・黄色い鼻水・熱っぽさが出るかぜの状態',
     signs: ['のどの痛み', '黄色い鼻水・鼻づまり', '熱っぽい'],
     mainTags: ['clear_heat', 'exterior'], needTags: ['moisten'], subTags: ['cough'],
@@ -131,7 +131,7 @@ export const PATTERNS = [
     avoid: ['辛いもの・揚げ物', 'お酒'],
   },
   {
-    id: 'haiso', name: '肺燥（乾燥）', kana: 'はいそう', group: 'tcm', temp: 'neutral',
+    id: 'haiso', icon: '🍂', short: '乾燥で、のどや肌の潤いが足りない', name: '肺燥（乾燥）', kana: 'はいそう', group: 'tcm', temp: 'neutral',
     plain: '空気の乾燥で「肺」（呼吸器・鼻・のど・肌）の潤いが奪われ、乾いた咳やのど・肌の乾燥が出やすい状態',
     signs: ['のどの乾燥・イガイガ', '乾いた咳', '肌の乾燥・かゆみ', '鼻の乾燥'],
     mainTags: ['moisten'], needTags: ['cough'], subTags: ['qi_tonify'],
@@ -140,7 +140,7 @@ export const PATTERNS = [
     avoid: ['辛いもの', '揚げ物・焼き物ばかりの食事'],
   },
   {
-    id: 'shokuseki', name: '食積（食べすぎ）', kana: 'しょくせき', group: 'tcm', temp: 'neutral',
+    id: 'shokuseki', icon: '🍽️', short: '食べすぎで、胃腸に食べ物が停滞している', name: '食積（食べすぎ）', kana: 'しょくせき', group: 'tcm', temp: 'neutral',
     plain: '食べすぎ・飲みすぎで胃腸に食べ物が停滞し、胃もたれや張りが出ている状態',
     signs: ['胃もたれ', 'げっぷ', 'お腹の張り', '二日酔い'],
     mainTags: ['digest'], needTags: ['qi_move'], subTags: ['spleen', 'clear_heat'],

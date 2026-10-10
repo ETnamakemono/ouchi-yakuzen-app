@@ -1,6 +1,6 @@
 // Service Worker：全ファイルを事前キャッシュしてオフラインで動かす
 // ファイルを更新したら VERSION を上げる → アプリに「新しいバージョンがあります」が出る
-const VERSION = 'v1.0.0';
+const VERSION = 'v1.1.0';
 const CACHE = `yakuzen-${VERSION}`;
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
