@@ -1,0 +1,6 @@
+# 公開しないもの
+.claude/
+docs/
+__pycache__/
+*.pyc
+desktop.ini
