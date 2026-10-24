@@ -4,3 +4,7 @@ docs/
 __pycache__/
 *.pyc
 desktop.ini
+
+# このアプリ以外のファイル（スキル定義など）は公開しない
+*-SKILL.md
+SKILL.md
