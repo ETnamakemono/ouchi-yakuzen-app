@@ -345,6 +345,8 @@ export function scaleText(text, factor) {
   return text.replace(/\d+と\d+\/\d+|\d+\/\d+|\d+(?:\.\d+)?/g, (s, offset, whole) => {
     // 「600W」など加熱条件は換算しない
     if (/^\d+W/.test(whole.slice(offset))) return s;
+    // 「約15粒」のように粒で数えるものは整数に（「1切れ」「1枚」は半分にできるので対象外）
+    if (/^粒/.test(whole.slice(offset + s.length)) && !/^\d+\//.test(s)) return String(Math.max(1, Math.round(parseNum(s) * factor)));
     return formatNum(parseNum(s) * factor);
   });
 }

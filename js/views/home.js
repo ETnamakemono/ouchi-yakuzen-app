@@ -7,6 +7,7 @@ import { WORRY_MAP } from '../../data/worries.js';
 import { CONST_MAP } from '../../data/constitutions.js';
 import { illustSVG } from '../illust.js';
 import { gogyoSVG, SEASON_TO_EL } from '../graphics.js';
+import { worryShort } from './find.js';
 
 export default function home() {
   const st = store.get();
@@ -15,15 +16,8 @@ export default function home() {
   const now = new Date();
   const last = st.lastConsult;
   const rec = st.records[0];
+  const my = st.settings.myWorries || [];
   const draft = st.draft;
-
-  const shortcuts = [
-    ['soup', '汁物を1品', 'あと一杯ほしい'],
-    ['side', '副菜を1品', '主菜はある日に'],
-    ['main', 'メインを作る', 'しっかりおかず'],
-    ['drink', 'ほっと一杯', '飲み物・おやつ'],
-    ['staple', 'ごはん・麺', '主食を一品で'],
-  ];
 
   const html = `
   <section class="hero">
@@ -32,6 +26,24 @@ export default function home() {
     <span class="season-pill" style="background:${sd.color}">${esc(sd.name)}｜五臓は「${esc(sd.organ)}」</span>
     ${si.doyo ? `<span class="tag kaki">土用</span>` : ''}${si.tsuyu ? `<span class="tag ai">梅雨</span>` : ''}
   </section>
+
+  <a class="btn primary big block" href="#/find" style="margin-top:10px;flex-direction:column;gap:0;line-height:1.4;padding:12px 16px">
+    <span>🧺 家の食材からさがす</span>
+    <small style="font-weight:400;font-size:.72em;opacity:.92">${my.length ? `いつもの悩み（${esc(my.map(worryShort).join('・'))}）と季節に合わせて` : 'あなたの悩みと季節に合うレシピを、家にある食材で'}</small>
+  </a>
+  <div class="btn-row" style="margin-top:10px">
+    <button class="btn small" data-act="start" style="min-height:48px">🌿 今日の不調から</button>
+    <button class="btn small" data-act="shop" style="min-height:48px">🛒 買い物前に調べる</button>
+  </div>
+  ${st.shopping.items.length ? `<a class="card flat" href="#/shopping" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;padding:12px 16px">
+    <span style="font-size:1.6em">🛒</span><span style="flex:1"><b>買い物リスト</b><br><small>残り ${st.shopping.items.filter(i => !i.done).length}品・作る予定 ${st.shopping.recipes.length}品</small></span><span class="muted">›</span></a>` : ''}
+
+  ${draft && draft.step ? `
+  <div class="card tint-kaki flat">
+    <div class="label">相談の続き</div>
+    <p style="margin:.2em 0 .6em">${draft.worries.length ? esc(draft.worries.map(w => WORRY_MAP[w]?.name || '季節の養生').join('・')) : '入力途中の相談があります'}</p>
+    <div class="btn-row"><button class="btn small ghost" data-act="discard">破棄</button><a class="btn small kaki" href="#/consult/${draft.step}">続きから</a></div>
+  </div>` : ''}
 
   <a class="card tint-matcha" href="#/learn/season" style="display:block;text-decoration:none;color:inherit">
     <div class="viz-row" style="grid-template-columns:1fr 120px;margin:0">
@@ -44,23 +56,6 @@ export default function home() {
     ${si.doyo ? `<p class="small" style="margin:.6em 0 0">🍂 ${glossify(si.doyo.summary)}</p>` : ''}
     <div class="small" style="text-align:right;margin-top:4px">くわしく ›</div>
   </a>
-
-  ${draft && draft.step ? `
-  <div class="card tint-kaki flat">
-    <div class="label">相談の続き</div>
-    <p style="margin:.2em 0 .6em">${draft.worries.length ? esc(draft.worries.map(w => WORRY_MAP[w]?.name || '季節の養生').join('・')) : '入力途中の相談があります'}</p>
-    <div class="btn-row"><button class="btn small ghost" data-act="discard">破棄</button><a class="btn small kaki" href="#/consult/${draft.step}">続きから</a></div>
-  </div>` : ''}
-
-  <button class="btn primary big block" data-act="start" style="margin-top:8px">🌿 からだの相談をする</button>
-  <button class="btn block" data-act="shop" style="margin-top:10px">🛒 買い物前にレシピを調べる</button>
-  ${st.shopping.items.length ? `<a class="card flat" href="#/shopping" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;padding:12px 16px">
-    <span style="font-size:1.6em">🛒</span><span style="flex:1"><b>買い物リスト</b><br><small>残り ${st.shopping.items.filter(i => !i.done).length}品・作る予定 ${st.shopping.recipes.length}品</small></span><span class="muted">›</span></a>` : ''}
-
-  <div class="shortcuts">
-    ${shortcuts.map(([c, t, s]) => `<button class="shortcut" data-cat="${c}"><span class="s-icon">${CATS[c].icon}</span><span>${t}<small>${s}</small></span></button>`).join('')}
-    ${last ? `<button class="shortcut" data-act="again"><span class="s-icon">🔁</span><span>前回と同じ悩みで<small>${esc(last.worries.map(w => WORRY_MAP[w]?.name || '季節の養生').join('・').slice(0, 18))}</small></span></button>` : ''}
-  </div>
 
   ${!st.constitution ? `
   <a class="card tint-ai" href="#/constitution" style="display:block;text-decoration:none;color:inherit">
@@ -87,15 +82,6 @@ export default function home() {
     mount(root) {
       root.querySelector('[data-act=start]').onclick = () => { store.saveDraft(newDraft()); location.hash = '#/consult/who'; };
       root.querySelector('[data-act=shop]').onclick = () => { store.saveDraft(newDraft({ mode: 'shop' })); location.hash = '#/consult/who'; };
-      root.querySelectorAll('[data-cat]').forEach(b => b.onclick = () => {
-        store.saveDraft(newDraft({ cat: b.dataset.cat, shortcut: true }));
-        location.hash = '#/consult/who';
-      });
-      const again = root.querySelector('[data-act=again]');
-      if (again) again.onclick = () => {
-        store.saveDraft(newDraft({ who: last.who, serves: last.serves, worries: last.worries, step: 'cat' }));
-        location.hash = '#/consult/cat';
-      };
       const discard = root.querySelector('[data-act=discard]');
       if (discard) discard.onclick = () => { store.clearDraft(); window.dispatchEvent(new HashChangeEvent('hashchange')); };
     },

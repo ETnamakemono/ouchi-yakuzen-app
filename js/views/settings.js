@@ -4,8 +4,9 @@ import { esc, sheet, toast, confirmSheet } from '../ui.js';
 import { INGREDIENTS, ING_MAP, GROUP_LABELS, STOCK_CATEGORIES } from '../../data/ingredients.js';
 import { TIME_LABELS, FAT_LIMITS } from '../engine.js';
 import { applyFontSize } from '../app.js';
+import { WORRIES, WORRY_CATS, WORRY_MAP } from '../../data/worries.js';
 
-export const APP_VERSION = '1.2.0';
+export const APP_VERSION = '1.3.0';
 const refresh = () => window.dispatchEvent(new HashChangeEvent('hashchange'));
 
 export const INSTALL_HELP = `
@@ -68,6 +69,13 @@ export default function settings() {
   const tool = (t, label) => `<label class="switch-row"><span>${label}</span><span class="switch"><input type="checkbox" data-tool="${t}" ${s.tools.includes(t) ? 'checked' : ''}><i></i></span></label>`;
 
   const html = `
+  <h2>からだ</h2>
+  <div class="card flat">
+    <div class="label">いつもの悩み（家の食材からさがすときに優先）</div>
+    <p class="small" style="margin:.2em 0 .6em">${esc((s.myWorries || []).map(id => WORRY_MAP[id]?.name).filter(Boolean).join('・') || 'なし')}</p>
+    <button class="btn small block" data-act="myworries">編集</button>
+  </div>
+
   <h2>食材</h2>
   <div class="card flat">
     <div class="label">ざっくり常備（タップでまとめて登録）</div>
@@ -147,6 +155,17 @@ export default function settings() {
         store.setSettings({ ngPartner: { ...store.settings().ngPartner, flags } });
       };
       const act = (name, fn) => root.querySelector(`[data-act=${name}]`).onclick = fn;
+      act('myworries', () => {
+        const sel = new Set(s.myWorries || []);
+        sheet(`<h3>いつもの悩み</h3><p class="small">くり返し気になる不調を選んでください。</p>
+          ${WORRY_CATS.map(c => `<div class="cat-head">${esc(c)}</div><div class="chips">${WORRIES.filter(w => w.cat === c).map(w => `<button class="chip ${sel.has(w.id) ? 'on' : ''}" data-w="${w.id}">${esc(w.name)}</button>`).join('')}</div>`).join('')}
+          <div style="position:sticky;bottom:0;background:var(--card);padding-top:12px"><button class="btn primary block" data-act="ok">保存する</button></div>`, {
+          onOpen(el, close) {
+            el.querySelectorAll('[data-w]').forEach(b => b.onclick = () => { const id = b.dataset.w; sel.has(id) ? sel.delete(id) : sel.add(id); b.classList.toggle('on'); });
+            el.querySelector('[data-act=ok]').onclick = () => { store.setSettings({ myWorries: [...sel] }); close(); toast('保存しました'); refresh(); };
+          },
+        });
+      });
       act('stock', () => chipPicker('常備食材', s.stock, () => true, v => store.setSettings({ stock: v }), 'いつも家にある食材・調味料を選んでください。ここに入っていない食材は、相談のたびに「ある？」と確認します。'));
       act('ngself', () => chipPicker('自分が避けたい食材', s.ngSelf, i => i.group !== 'seasoning', v => store.setSettings({ ngSelf: v })));
       act('ngpartner', () => chipPicker('夫が苦手な食材', s.ngPartner.ids, i => i.group !== 'seasoning', v => store.setSettings({ ngPartner: { ...store.settings().ngPartner, ids: v } })));

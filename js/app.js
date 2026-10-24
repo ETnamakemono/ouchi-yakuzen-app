@@ -11,8 +11,9 @@ import learn from './views/learn.js';
 import settings from './views/settings.js';
 import onboarding from './views/onboarding.js';
 import shopping from './views/shopping.js';
+import { find, found } from './views/find.js';
 
-const routes = { home, consult, result, recipe, records, constitution, learn, settings, onboarding, shopping };
+const routes = { home, consult, result, recipe, records, constitution, learn, settings, onboarding, shopping, find, found };
 
 const view = document.getElementById('view');
 const topbar = document.getElementById('topbar');

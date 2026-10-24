@@ -20,6 +20,7 @@ function defaults() {
       lowFat: true,
       fontSize: 'normal',
       onboarded: false,
+      myWorries: [],
     },
     constitution: null,
     draft: null,
@@ -27,6 +28,7 @@ function defaults() {
     lastHave: [],
     records: [],
     shopping: { items: [], recipes: [] },
+    find: null,
   };
 }
 

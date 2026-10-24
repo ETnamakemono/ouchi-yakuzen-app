@@ -1,13 +1,13 @@
 // Service Worker：全ファイルを事前キャッシュしてオフラインで動かす
 // ファイルを更新したら VERSION を上げる → アプリに「新しいバージョンがあります」が出る
-const VERSION = 'v1.2.0';
+const VERSION = 'v1.3.0';
 const CACHE = `yakuzen-${VERSION}`;
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png',
   './js/app.js', './js/store.js', './js/season.js', './js/engine.js', './js/illust.js', './js/exporter.js', './js/ui.js', './js/context.js', './js/graphics.js',
   './js/views/home.js', './js/views/consult.js', './js/views/result.js', './js/views/recipe.js', './js/views/records.js',
-  './js/views/constitution.js', './js/views/learn.js', './js/views/settings.js', './js/views/onboarding.js', './js/views/shopping.js',
+  './js/views/constitution.js', './js/views/learn.js', './js/views/settings.js', './js/views/onboarding.js', './js/views/shopping.js', './js/views/find.js',
   './data/ingredients.js', './data/recipes.js', './data/recipes_a.js', './data/recipes_b.js', './data/recipes_c.js', './data/worries.js', './data/patterns.js', './data/constitutions.js',
   './data/seasons.js', './data/companions.js', './data/glossary.js', './data/readings.js',
 ];

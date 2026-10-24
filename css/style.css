@@ -503,3 +503,9 @@ table.gtable.wide thead th { text-align: center; font-size: .9em; padding-bottom
 .shop-recipe { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-bottom: 1px dashed var(--line); }
 .shop-recipe:last-child { border-bottom: 0; }
 .shop-recipe a { flex: 1; padding: 10px 0; text-decoration: none; color: var(--ink); font-weight: 600; }
+
+.btn.primary.big small { color: #fff; }
+.seg.scroll button small { color: inherit; }
+
+.seg.who-seg { display: inline-flex; width: auto; }
+.seg.who-seg button { flex: 0 0 auto; min-width: 76px; white-space: nowrap; }

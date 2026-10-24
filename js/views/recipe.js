@@ -16,10 +16,14 @@ window.addEventListener('hashchange', () => { wakeLock?.release?.(); wakeLock = 
 
 export default function recipe([id, from]) {
   const r = RECIPE_MAP[id];
-  const back = from === 'r' ? '#/result' : from === 'rec' ? '#/records' : from === 'shop' ? '#/shopping' : '#/home';
+  const back = from === 'r' ? '#/result' : from === 'rec' ? '#/records' : from === 'shop' ? '#/shopping' : from === 'f' ? '#/found' : '#/home';
   if (!r) return { title: 'レシピ', back, html: `<div class="empty">レシピが見つかりませんでした。</div>` };
   const st = store.get();
-  const d = from === 'r' ? st.draft : null;
+  // 相談（r）から来たときはその内容、食材検索（f）から来たときはそちらの条件で「足りない・代用」を表示
+  const fs = st.find;
+  const d = from === 'r' ? st.draft
+    : from === 'f' && fs ? { who: fs.who, serves: fs.who === 'self' ? 1 : 2, have: fs.have, worries: [...(st.settings.myWorries || []), ...(fs.today || [])], companions: [] }
+    : null;
   let serves = d?.serves || st.settings.defaultServes;
   const avail = d && Array.isArray(d.have) ? resolveAvailability(r, d.have, st.settings) : { missing: [], subs: [], skips: [] };
   const missing = avail.missing;
