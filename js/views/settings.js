@@ -6,7 +6,7 @@ import { TIME_LABELS, FAT_LIMITS } from '../engine.js';
 import { applyFontSize } from '../app.js';
 import { WORRIES, WORRY_CATS, WORRY_MAP } from '../../data/worries.js';
 
-export const APP_VERSION = '1.3.0';
+export const APP_VERSION = '1.3.1';
 const refresh = () => window.dispatchEvent(new HashChangeEvent('hashchange'));
 
 export const INSTALL_HELP = `

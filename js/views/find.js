@@ -50,7 +50,8 @@ export function find() {
   const f = findState();
   const my = st.settings.myWorries || [];
   const stockNames = st.settings.stock.map(id => ING_MAP[id]).filter(i => i && i.group !== 'seasoning').map(i => i.name.replace(/（.*/, ''));
-  const chip = i => `<button class="chip ${f.have.includes(i.id) ? 'on' : ''}" data-i="${i.id}" data-name="${esc(i.name + i.kana)}">${esc(i.name.replace(/（.*/, ''))}</button>`;
+  const stockSet = new Set(st.settings.stock);
+  const chip = i => `<button class="chip ${f.have.includes(i.id) ? 'on' : ''}" data-i="${i.id}" data-name="${esc(i.name + i.kana)}">${esc(i.name.replace(/（.*/, ''))}${stockSet.has(i.id) ? '<span class="badge" style="background:var(--wash);color:var(--ink-3)">常備</span>' : ''}</button>`;
 
   const html = `
   <div class="card flat" style="margin-top:10px;padding:12px 14px">
@@ -66,10 +67,10 @@ export function find() {
   </div>
 
   <div class="q-title" style="margin-top:6px">家にある食材は？</div>
-  <p class="q-sub">あるものをタップ。前回選んだ食材と、買い物リストで買ったものは選んだままにしています。</p>
+  <p class="q-sub">今日使いたい食材・家にある食材をタップ。「常備」の印がある食材は選ばなくても使える前提ですが、選ぶとその食材を使うレシピを優先します。</p>
   <input type="text" id="ing-filter" placeholder="🔍 食材名で絞り込み（例：大根）" autocomplete="off">
-  ${PICK_GROUPS.map(g => { const list = INGREDIENTS.filter(i => i.group === g && !st.settings.stock.includes(i.id)); return list.length ? `<div class="cat-head" data-g>${esc(GROUP_LABELS[g])}</div><div class="chips">${list.map(chip).join('')}</div>` : ''; }).join('')}
-  <p class="small" style="margin-top:14px">常備として登録済み（選ばなくてOK）：${esc(stockNames.join('・') || 'なし')} ＋調味料など。<a href="#/settings">設定で変更</a></p>
+  ${PICK_GROUPS.map(g => { const list = INGREDIENTS.filter(i => i.group === g); return list.length ? `<div class="cat-head" data-g>${esc(GROUP_LABELS[g])}</div><div class="chips">${list.map(chip).join('')}</div>` : ''; }).join('')}
+  <p class="small" style="margin-top:14px">調味料・薬味など、ほかの常備は設定で変更できます。<a href="#/settings">設定を開く</a></p>
   <div style="height:24px"></div>
   <div class="action-bar"><div class="inner">
     <button class="btn ghost back" data-act="clear">選択をはずす</button>
@@ -95,6 +96,7 @@ export function find() {
       root.querySelector('[data-act=today]').onclick = () => worryPicker('今日だけの不調', '今日とくに気になることがあれば。次回はリセットされます。', f.today, v => { f.today = v; saveFind(f); });
       go.onclick = () => {
         store.update(s => { s.lastHave = [...new Set([...(s.lastHave || []).filter(id => !PICK_GROUPS.includes(ING_MAP[id]?.group)), ...f.have])]; });
+        f.cat = 'any'; saveFind(f);
         location.hash = '#/found';
       };
       update();
@@ -133,12 +135,31 @@ export function found([cat]) {
   const inCat = x => f.cat === 'any' || x.recipe.cat === f.cat;
   const ready = items.filter(x => !x.missing.length);
   const almost = items.filter(x => x.missing.length === 1);
-  const count = c => ready.filter(x => c === 'any' || x.recipe.cat === c).length;
+  const pool = f.have.length ? ready.filter(x => x.used.length) : ready;
+  const count = c => pool.filter(x => c === 'any' || x.recipe.cat === c).length;
+  const otherCats = f.cat !== 'any' && f.have.length ? Object.keys(CATS).filter(c => c !== f.cat && count(c)) : [];
   const shownReady = ready.filter(inCat);
   const useSel = shownReady.filter(x => x.used.length);
   const stockOnly = shownReady.filter(x => !x.used.length);
   const shownAlmost = almost.filter(inCat).slice(0, 5);
   const added = new Set(st.shopping.recipes.map(r => r.id));
+  // 選んだ食材の薬膳メモ：その食材の性質・悩みとの相性・食べ方のコツ（レシピが少ない食材ほど役立つ）
+  const recipeCount = id => ranked.filter(c => c.recipe.items.some(i => i[0] === id && i[4] !== 'opt')).length;
+  const notes = f.have.slice(0, 4).map(id => {
+    const ing = ING_MAP[id];
+    const n = recipeCount(id);
+    if (n >= 3 && f.have.length > 2) return '';
+    const fit = worries.filter(w => Object.entries(WORRY_MAP[w]?.patterns || {}).filter(([, v]) => v >= 2)
+      .some(([p]) => [...PATTERN_MAP[p].mainTags, ...PATTERN_MAP[p].needTags].some(t => ing.tags.includes(t))));
+    const coldWarn = (ing.nature === '寒' || ing.nature === '涼') && diag.direction === 'cold';
+    return `<div class="tip-card"><b>${natureBadge(ing.nature)} ${esc(ing.name)}</b>
+      <span class="small">（${esc(ing.taste.join('・'))}味・${esc(ing.meridian.join('・'))}）</span>
+      <ul class="points" style="margin:.3em 0">${ing.actions.map(a => `<li>${esc(a)}</li>`).join('')}</ul>
+      ${fit.length ? `<div class="small">◎ <b>${esc(fit.map(worryShort).join('・'))}</b>によい食材です</div>` : ''}
+      ${coldWarn ? `<div class="small" style="color:#b0631a">❄ 体を冷やす性質なので、今日は加熱したり生姜・ねぎと合わせたりするのがおすすめ</div>` : ''}
+      ${ing.howto?.length ? `<div class="howto" style="margin-top:6px"><b>食べ方のコツ</b><ul class="points">${ing.howto.slice(0, 2).map(t => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}
+      <div class="small muted" style="margin-top:4px">この食材を使う登録レシピ：${n}件${n <= 1 ? '（まだ少ないので、順次増やします）' : ''}</div></div>`;
+  }).filter(Boolean);
   // 見立て（1行）
   const top = diag.top[0]?.pattern;
 
@@ -182,6 +203,9 @@ export function found([cat]) {
   ${useSel.length ? `<div class="label small" style="margin-top:6px">選んだ食材で作れる（${useSel.length}件）</div>
     ${useSel.slice(0, 8).map(card).join('')}
     ${useSel.length > 8 ? `<div id="more" class="hidden">${useSel.slice(8).map(card).join('')}</div><button class="btn ghost block" data-act="more">もっと見る（${useSel.length - 8}件）</button>` : ''}` : ''}
+  ${f.have.length && !useSel.length && otherCats.length ? `<div class="card tint-kaki flat"><p style="margin:0 0 8px">選んだ食材を使う${CATS[f.cat].name}はありませんでした。ほかの種類ならあります：</p>
+    <div class="chips">${otherCats.map(c => `<button class="chip" data-cat="${c}">${CATS[c].icon} ${CATS[c].name}（${count(c)}件）</button>`).join('')}</div></div>` : ''}
+  ${notes.length ? `<h2>選んだ食材の薬膳メモ</h2>${notes.join('')}` : ''}
   ${!shownReady.length ? `<div class="card tint-kaki"><p style="margin:0">この食材で作れる${f.cat === 'any' ? '' : CATS[f.cat].name + 'の'}レシピは見つかりませんでした。${f.cat === 'any' ? '' : '「すべて」のタブも見てみてください。'}下の「あと1品あれば」なら作れます。</p></div>` : ''}
   ${stockOnly.length ? `<details class="more" ${useSel.length ? '' : 'open'}><summary>🏠 常備だけで作れる（${stockOnly.length}件）</summary><div class="body" style="padding:0 8px 8px">${stockOnly.slice(0, 10).map(card).join('')}</div></details>` : ''}
   ${shownAlmost.length ? `<div class="label small" style="margin-top:16px">あと1品あれば作れる</div>${shownAlmost.map(card).join('')}` : ''}
